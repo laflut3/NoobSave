@@ -19,7 +19,7 @@ import java.util.*;
 public class FichierService {
 
     private final FichierRepository fichierRepository;
-    private final Path repertoire = Paths.get("./archive");
+    private final Path repertoire = Paths.get("./../archive");
 
     @Scheduled(fixedRate = 60000)
     public void synchroniserFichiersDuRepertoire() throws IOException {
