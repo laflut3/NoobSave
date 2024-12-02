@@ -7,12 +7,14 @@ set -e
 ARCHIVE_FILE="archive"
 
 # Vérification et création du fichier archive
-if [ -f "$ARCHIVE_FILE" ]; then
-    echo "Le fichier archive existe déjà."
+if [ ! -e "$ARCHIVE_FILE" ]; then
+    mkdir "$ARCHIVE_FILE"
+    echo "Dossier archive créé."
+elif [ -f "$ARCHIVE_FILE" ]; then
+    echo "Erreur : 'archive' existe déjà en tant que fichier."
+    exit 1
 else
-    echo "Création du fichier archive..."
-    touch "$ARCHIVE_FILE"
-    echo "Fichier archive créé."
+    echo "Le dossier archive existe déjà."
 fi
 
 # Vérification des images Docker
@@ -31,33 +33,45 @@ check_and_pull_image "adminer:latest"
 check_and_pull_image "mariadb:latest"
 
 # Démarrage des conteneurs avec Docker Compose
-echo "Démarrage des conteneurs avec docker-compose..."
-cd "./.NoobSave_back/src/main/resources/"
-docker-compose up -d
-echo "Conteneurs démarrés."
+COMPOSE_DIR="./.NoobSave_back/src/main/resources/"
+if [ -d "$COMPOSE_DIR" ]; then
+    echo "Démarrage des conteneurs avec docker-compose..."
+    cd "$COMPOSE_DIR"
+    docker compose up -d
+    cd - > /dev/null
+    echo "Conteneurs démarrés."
+else
+    echo "Erreur : Le répertoire Docker Compose ($COMPOSE_DIR) n'existe pas."
+    exit 1
+fi
 
 # Démarrage de l'application Spring Boot
-SPRING_BOOT_DIR="./.NoobSave_back/" # Changez ce chemin
+SPRING_BOOT_DIR="./.NoobSave_back/"
 if [ -d "$SPRING_BOOT_DIR" ]; then
     echo "Démarrage de l'application Spring Boot..."
     cd "$SPRING_BOOT_DIR"
-    ./mvnw spring-boot:run & SPRING_BOOT_PID=$!
+    if [ -f "./mvnw" ]; then
+        ./mvnw spring-boot:run & SPRING_BOOT_PID=$!
+        echo "Application Spring Boot démarrée (PID: $SPRING_BOOT_PID)."
+    else
+        echo "Erreur : Le fichier 'mvnw' est introuvable dans $SPRING_BOOT_DIR."
+        exit 1
+    fi
     cd - > /dev/null
-    echo "Application Spring Boot démarrée (PID: $SPRING_BOOT_PID)."
 else
     echo "Erreur : Le répertoire Spring Boot ($SPRING_BOOT_DIR) n'existe pas."
     exit 1
 fi
 
 # Démarrage de l'application React
-REACT_APP_DIR="./.NoobSave_front" # Changez ce chemin
+REACT_APP_DIR="./.NoobSave_front"
 if [ -d "$REACT_APP_DIR" ]; then
     echo "Démarrage de l'application React..."
     cd "$REACT_APP_DIR"
     npm install
     npm start & REACT_APP_PID=$!
-    cd - > /dev/null
     echo "Application React démarrée (PID: $REACT_APP_PID)."
+    cd - > /dev/null
 else
     echo "Erreur : Le répertoire React ($REACT_APP_DIR) n'existe pas."
     exit 1
