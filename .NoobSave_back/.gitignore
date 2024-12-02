@@ -54,7 +54,6 @@ build/
 *.key
 *.pem
 *.crt
-application*.properties
 application*.yml
 secrets/
 
