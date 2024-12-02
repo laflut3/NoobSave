@@ -32,16 +32,16 @@ check_and_pull_image "mariadb:latest"
 
 # Démarrage des conteneurs avec Docker Compose
 echo "Démarrage des conteneurs avec docker-compose..."
+cd "./.NoobSave_back/src/main/resources/"
 docker-compose up -d
 echo "Conteneurs démarrés."
 
 # Démarrage de l'application Spring Boot
-SPRING_BOOT_DIR="./path_to_spring_boot_app" # Changez ce chemin
+SPRING_BOOT_DIR="./.NoobSave_back/" # Changez ce chemin
 if [ -d "$SPRING_BOOT_DIR" ]; then
     echo "Démarrage de l'application Spring Boot..."
     cd "$SPRING_BOOT_DIR"
-    ./mvnw spring-boot:run &
-    SPRING_BOOT_PID=$!
+    ./mvnw spring-boot:run & SPRING_BOOT_PID=$!
     cd - > /dev/null
     echo "Application Spring Boot démarrée (PID: $SPRING_BOOT_PID)."
 else
@@ -50,13 +50,12 @@ else
 fi
 
 # Démarrage de l'application React
-REACT_APP_DIR="./path_to_react_app" # Changez ce chemin
+REACT_APP_DIR="./.NoobSave_front" # Changez ce chemin
 if [ -d "$REACT_APP_DIR" ]; then
     echo "Démarrage de l'application React..."
     cd "$REACT_APP_DIR"
     npm install
-    npm start &
-    REACT_APP_PID=$!
+    npm start & REACT_APP_PID=$!
     cd - > /dev/null
     echo "Application React démarrée (PID: $REACT_APP_PID)."
 else
