@@ -1,0 +1,70 @@
+# Maven-specific files
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.mvn/
+*.swp
+*.swo
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Logs
+*.log
+spring.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+*.pid
+*.seed
+*.orig
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE-specific files
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+
+### Eclipse ###
+.classpath
+.project
+.settings/
+
+### VS Code ###
+.vscode/
+
+# Build directory
+target/
+build/
+
+# Generated files
+*.class
+
+# Application-specific files
+*.env
+*.key
+*.pem
+*.crt
+application*.properties
+application*.yml
+secrets/
+
+# Test coverage reports
+*.lcov
+*.coverage
+coverage-final.json
+
+# Other exclusions
+*.war
+*.jar
+node_modules/
+dist/
