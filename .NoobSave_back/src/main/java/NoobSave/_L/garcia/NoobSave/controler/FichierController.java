@@ -17,6 +17,7 @@ import java.util.Optional;
  * Permet la récupération, le téléchargement et la suppression de fichiers.
  */
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/fichiers")
 @RequiredArgsConstructor
 public class FichierController {
