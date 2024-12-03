@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import {Link} from "react-router-dom";
+import {useState} from "react";
 
 function Header() {
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -52,30 +52,38 @@ function Header() {
                         </Link>
                     </li>
                 </ul>
-
-                {/* Search Bar */}
-                <div className="hidden md:block">
-                    <input
-                        type="text"
-                        placeholder="Rechercher..."
-                        className="py-2 px-4 rounded-full border border-transparent focus:border-yellow-300 focus:outline-none transition duration-300"
-                    />
-                </div>
-
                 {/* Mobile Menu Button */}
                 <button
                     className="md:hidden focus:outline-none"
                     onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
                 >
-                    <span className="material-icons text-3xl">
-                        {isMobileMenuOpen ? "close" : "menu"}
-                    </span>
+                    <div className="flex flex-col space-y-1">
+                        <span
+                            className={`block h-1 w-6 bg-white transition transform ${
+                                isMobileMenuOpen ? "rotate-45 translate-y-2" : ""
+                            }`}
+                        />
+                        <span
+                            className={`block h-1 w-6 bg-white transition ${
+                                isMobileMenuOpen ? "opacity-0" : ""
+                            }`}
+                        />
+                        <span
+                            className={`block h-1 w-6 bg-white transition transform ${
+                                isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
+                            }`}
+                        />
+                    </div>
                 </button>
             </nav>
 
             {/* Mobile Menu */}
-            {isMobileMenuOpen && (
-                <ul className="md:hidden bg-purple-700 text-center space-y-4 py-4">
+            <div
+                className={`md:hidden transition-all duration-300 overflow-hidden ${
+                    isMobileMenuOpen ? "max-h-96" : "max-h-0"
+                }`}
+            >
+                <ul className="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center space-y-4 py-4">
                     <li>
                         <Link
                             to="/"
@@ -109,7 +117,7 @@ function Header() {
                         </Link>
                     </li>
                 </ul>
-            )}
+            </div>
         </header>
     );
 }
