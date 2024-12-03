@@ -1,6 +1,6 @@
 export default function Home() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white flex flex-col items-center justify-center px-6">
+        <section className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white flex flex-col items-center justify-center px-6">
             {/* Titre Principal */}
             <h1 className="text-5xl md:text-7xl font-extrabold text-center mb-6">
                 Bienvenue sur <span className="text-yellow-300">NoobSave</span>
@@ -43,6 +43,6 @@ export default function Home() {
                     Accéder à mes fichiers
                 </a>
             </div>
-        </div>
+        </section>
     );
 }
