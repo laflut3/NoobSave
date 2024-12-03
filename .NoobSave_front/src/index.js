@@ -7,6 +7,8 @@ import Documents from "./components/Documents";
 import Header from "./components/Header";
 import Home from "./components/Home";
 import Guide from "./components/Guide";
+import Footer from "./components/Footer";
+import DetailTech from "./components/DetailTech";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -17,7 +19,9 @@ root.render(
               <Route path="/" element={<Home/>} />
               <Route path="/documents" element={<Documents/>} />
               <Route path="/guide" element={<Guide/>} />
+              <Route path="/detail" element={<DetailTech/>} />
           </Routes>
+          <Footer/>
       </Router>
   </React.StrictMode>
 );
