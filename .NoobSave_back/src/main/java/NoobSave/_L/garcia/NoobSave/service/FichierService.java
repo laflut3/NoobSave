@@ -14,13 +14,31 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
+/**
+ * Service pour gérer les opérations sur les fichiers, y compris la synchronisation avec le répertoire,
+ * l'ajout, la suppression et la récupération des fichiers depuis la base de données.
+ */
 @Service
 @RequiredArgsConstructor
 public class FichierService {
 
+    /**
+     * Référence au dépôt de fichiers pour interagir avec la base de données.
+     */
     private final FichierRepository fichierRepository;
+
+    /**
+     * Chemin du répertoire local pour archiver les fichiers.
+     */
     private final Path repertoire = Paths.get("./../archive");
 
+    /**
+     * Synchronise les fichiers dans le répertoire local avec la base de données.
+     * Si le fichier existe déjà, son contenu est mis à jour si modifié.
+     * Si le fichier est nouveau, il est ajouté à la base de données.
+     *
+     * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
+     */
     @Scheduled(fixedRate = 60000)
     public void synchroniserFichiersDuRepertoire() throws IOException {
         System.out.println("Début de la synchronisation à : " + LocalDateTime.now());
@@ -103,17 +121,54 @@ public class FichierService {
     }
 
 
-
+    /**
+     * Récupère tous les fichiers enregistrés dans la base de données.
+     *
+     * @return une liste contenant tous les fichiers.
+     */
     public List<Fichier> obtenirTousLesFichiers() {
         return fichierRepository.findAll();
     }
 
+    /**
+     * Récupère un fichier à partir de son identifiant unique.
+     *
+     * @param id identifiant du fichier.
+     * @return un objet `Optional` contenant le fichier s'il existe, sinon vide.
+     */
     public Optional<Fichier> obtenirFichierParId(Long id) {
         return fichierRepository.findById(id);
     }
 
+    /**
+     * Vérifie si un fichier est valide pour être enregistré.
+     * Seuls les fichiers avec les extensions .pdf, .txt ou .docx sont considérés comme valides.
+     *
+     * @param fichier fichier à vérifier.
+     * @return true si le fichier est valide, sinon false.
+     */
     public boolean estUnFichierValide(File fichier) {
         String nom = fichier.getName().toLowerCase();
         return nom.endsWith(".pdf") || nom.endsWith(".txt") || nom.endsWith(".docx");
     }
+
+    /**
+     * Supprime un fichier du répertoire local et de la base de données.
+     *
+     * @param fichier instance de l'entité Fichier à supprimer.
+     */
+    public void supprimerFichier(Fichier fichier) {
+        Path fichierPath = repertoire.resolve(fichier.getNom());
+
+        try {
+            Files.deleteIfExists(fichierPath);
+            System.out.println("Fichier supprimé du disque : " + fichierPath.toAbsolutePath());
+        } catch (IOException e) {
+            System.out.println("Erreur lors de la suppression du fichier : " + e.getMessage());
+        }
+
+        fichierRepository.delete(fichier);
+        System.out.println("Fichier supprimé de la base de données : " + fichier.getNom());
+    }
+
 }
