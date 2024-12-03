@@ -25,6 +25,18 @@ const Documents = () => {
             .catch((error) => console.error(error));
     };
 
+    const supprimerFichier = (id) => {
+        if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
+            axios
+                .delete(`http://localhost:8080/api/fichiers/${id}`)
+                .then(() => {
+                    setFichiers(fichiers.filter((fichier) => fichier.id !== id));
+                    alert("Fichier supprimé avec succès !");
+                })
+                .catch((error) => console.error("Erreur lors de la suppression du fichier :", error));
+        }
+    };
+
     return (
         <div className="container mx-auto py-10 px-4">
             {/* Titre Principal */}
@@ -56,6 +68,13 @@ const Documents = () => {
                                 onClick={() => telechargerFichier(fichier.id, fichier.nom)}
                             >
                                 Télécharger
+                            </button>
+
+                            <button
+                                className="px-5 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 transition duration-200 ml-2"
+                                onClick={() => supprimerFichier(fichier.id)}
+                            >
+                                Supprimer
                             </button>
                         </div>
                     ))
