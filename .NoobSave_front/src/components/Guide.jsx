@@ -1,6 +1,6 @@
 export default function GuideUtilisation() {
     return (
-        <div className="min-h-screen bg-gray-100 py-10 px-6">
+        <section className="min-h-screen bg-gray-100 py-10 px-6">
             {/* Titre Principal */}
             <h1 className="text-5xl font-extrabold text-center text-blue-600 mb-10">
                 Guide d'Utilisation de <span className="text-purple-500">NoobSave</span>
@@ -52,6 +52,6 @@ export default function GuideUtilisation() {
                     </p>
                 </div>
             </div>
-        </div>
+        </section>
     );
 }
