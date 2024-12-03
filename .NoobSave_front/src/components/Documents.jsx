@@ -4,11 +4,17 @@ import axios from "axios";
 const Documents = () => {
     const [fichiers, setFichiers] = useState([]);
 
-    useEffect(() => {
+    // Fonction pour charger les fichiers
+    const chargerFichiers = () => {
         axios
             .get("http://localhost:8080/api/fichiers")
             .then((response) => setFichiers(response.data))
             .catch((error) => console.error(error));
+    };
+
+    // Chargement initial des fichiers
+    useEffect(() => {
+        chargerFichiers();
     }, []);
 
     const telechargerFichier = (id, nom) => {
@@ -28,17 +34,22 @@ const Documents = () => {
     const supprimerFichier = (id) => {
         if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
             axios
-                .delete(`http://localhost:8080/api/fichiers/${id}`)
+                .delete(`http://localhost:8080/api/fichiers/${id}`, { withCredentials: true })
                 .then(() => {
-                    setFichiers(fichiers.filter((fichier) => fichier.id !== id));
-                    alert("Fichier supprimé avec succès !");
+                    console.log("Fichier supprimé !");
+                    // Met à jour l'état en supprimant le fichier supprimé
+                    setFichiers((prevFichiers) =>
+                        prevFichiers.filter((fichier) => fichier.id !== id)
+                    );
                 })
-                .catch((error) => console.error("Erreur lors de la suppression du fichier :", error));
+                .catch((error) => {
+                    console.error("Erreur lors de la suppression du fichier :", error);
+                });
         }
     };
 
     return (
-        <div className="container mx-auto py-10 px-4">
+        <section className="container min-h-screen mx-auto py-10 px-4">
             {/* Titre Principal */}
             <h1 className="text-5xl font-extrabold mb-10 text-center text-gradient bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
                 Mes Fichiers
@@ -70,6 +81,7 @@ const Documents = () => {
                                 Télécharger
                             </button>
 
+                            {/* Bouton Supprimer */}
                             <button
                                 className="px-5 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 transition duration-200 ml-2"
                                 onClick={() => supprimerFichier(fichier.id)}
@@ -89,7 +101,7 @@ const Documents = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </section>
     );
 };
 
