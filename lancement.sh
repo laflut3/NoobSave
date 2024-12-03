@@ -10,12 +10,19 @@ ARCHIVE_FILE="archive"
 if [ ! -e "$ARCHIVE_FILE" ]; then
     mkdir "$ARCHIVE_FILE"
     echo "Dossier archive créé."
+    # Accorder les droits nécessaires sur le répertoire
+    sudo chmod 777 "$ARCHIVE_FILE"
+    echo "Droits 777 accordés au dossier archive."
 elif [ -f "$ARCHIVE_FILE" ]; then
     echo "Erreur : 'archive' existe déjà en tant que fichier."
     exit 1
 else
     echo "Le dossier archive existe déjà."
+    # Vérifier et corriger les permissions si nécessaire
+    sudo chmod 777 "$ARCHIVE_FILE"
+    echo "Droits 777 vérifiés/ajustés sur le dossier archive."
 fi
+
 
 # Vérification des images Docker
 function check_and_pull_image() {
