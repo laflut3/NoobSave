@@ -33,13 +33,31 @@ public class FichierService {
     private final Path repertoire = Paths.get("./../archive");
 
     /**
+     * declenche une sauvegarde toute les minute
+     *
+     * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
+     */
+    @Scheduled(fixedRate = 60000)
+    public void regularSave() throws IOException {
+        synchroniserFichiersDuRepertoire();
+    }
+
+    /**
+     * declenche la sauvegarde
+     *
+     * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
+     */
+    public void saveDeclencher() throws IOException {
+        synchroniserFichiersDuRepertoire();
+    }
+
+    /**
      * Synchronise les fichiers dans le répertoire local avec la base de données.
      * Si le fichier existe déjà, son contenu est mis à jour si modifié.
      * Si le fichier est nouveau, il est ajouté à la base de données.
      *
      * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
      */
-    @Scheduled(fixedRate = 60000)
     public void synchroniserFichiersDuRepertoire() throws IOException {
         System.out.println("Début de la synchronisation à : " + LocalDateTime.now());
 
