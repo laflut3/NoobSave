@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,17 @@ public class FichierController {
     @GetMapping
     public ResponseEntity<List<Fichier>> obtenirTousLesFichiers() {
         return ResponseEntity.ok(fichierService.obtenirTousLesFichiers());
+    }
+
+    /**
+     * Récupère la liste de tous les fichiers enregistrés.
+     *
+     * ResponseEntity contenant une liste de tous les fichiers.
+     */
+    @GetMapping(path = "/save")
+    public ResponseEntity<String> declencherSauvegarde() throws IOException {
+        fichierService.saveDeclencher();
+        return ResponseEntity.ok("Sauvegarde déclenchée avec succès !");
     }
 
     /**
