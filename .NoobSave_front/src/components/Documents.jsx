@@ -31,6 +31,13 @@ const Documents = () => {
             .catch((error) => console.error(error));
     };
 
+    const save = () => {
+        axios
+            .get("http://localhost:8080/api/fichiers/save")
+            .then((response) => console.log(response))
+            .catch((error) => console.error(error));
+    };
+
     const supprimerFichier = (id) => {
         if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
             axios
@@ -100,6 +107,9 @@ const Documents = () => {
                         </p>
                     </div>
                 )}
+            </div>
+            <div className={"w-full flex justify-center p-10 text-center items-center gap-6"}>
+                <button onClick={save} className={"p-4 text-white font-bold flex text-center justify-center shadow-lg hover:shadow-xl bg-blue-500 hover:bg-blue-600 rounded-full"}>Déclencher la sauvegarde</button>
             </div>
         </section>
     );
