@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
@@ -9,21 +9,36 @@ import Home from "./components/Home";
 import Guide from "./components/Guide";
 import Footer from "./components/Footer";
 import DetailTech from "./components/DetailTech";
+import SidebarUser from "./components/SidebarUser";
+
+const App = () => {
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+    const toggleSidebar = () => {
+        setSidebarOpen(!isSidebarOpen);
+    };
+
+    return (
+        <Router>
+            {/* Pass the toggleSidebar function and isSidebarOpen state to components */}
+            <Header toggleSidebar={toggleSidebar} />
+            <SidebarUser isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/guide" element={<Guide />} />
+                <Route path="/detail" element={<DetailTech />} />
+            </Routes>
+            <Footer />
+        </Router>
+    );
+};
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-      <Router>
-          <Header/>
-          <Routes>
-              <Route path="/" element={<Home/>} />
-              <Route path="/documents" element={<Documents/>} />
-              <Route path="/guide" element={<Guide/>} />
-              <Route path="/detail" element={<DetailTech/>} />
-          </Routes>
-          <Footer/>
-      </Router>
-  </React.StrictMode>
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

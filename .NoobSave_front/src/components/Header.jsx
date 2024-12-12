@@ -1,7 +1,7 @@
-import {Link} from "react-router-dom";
-import {useState} from "react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
-function Header() {
+function Header({ toggleSidebar }) {
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -52,6 +52,15 @@ function Header() {
                         </Link>
                     </li>
                 </ul>
+
+                {/* Sidebar Toggle Button */}
+                <button
+                    className="hidden md:block bg-blue-700 text-white font-medium px-4 py-2 rounded-md shadow-md hover:bg-blue-800 transition"
+                    onClick={toggleSidebar}
+                >
+                    Gérer Utilisateurs
+                </button>
+
                 {/* Mobile Menu Button */}
                 <button
                     className="md:hidden focus:outline-none"
