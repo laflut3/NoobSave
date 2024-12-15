@@ -39,6 +39,11 @@ public class Fichier {
     private String type;
 
     /**
+     * Chemin absolu du fichier
+     */
+    private String chemin;
+
+    /**
      * Date d'ajout du fichier dans la base de données.
      */
     private LocalDateTime dateAjout;

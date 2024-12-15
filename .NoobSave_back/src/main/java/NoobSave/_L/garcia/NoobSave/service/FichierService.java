@@ -115,13 +115,14 @@ public class FichierService {
                     } else {
                         // Nouveau fichier
                         System.out.println("Ajout d'un nouveau fichier : " + fichier.getName());
-                        Fichier nouvelFichier = new Fichier();
-                        nouvelFichier.setNom(fichier.getName());
-                        nouvelFichier.setType(typeMime);
-                        nouvelFichier.setContenu(contenu);
-                        nouvelFichier.setDateAjout(LocalDateTime.now());
-                        nouvelFichier.setDateModification(dateModification);
-                        fichierRepository.save(nouvelFichier);
+                        Fichier nouveauFichier = new Fichier();
+                        nouveauFichier.setNom(fichier.getName());
+                        nouveauFichier.setType(typeMime);
+                        nouveauFichier.setChemin(fichierPath.toString());
+                        nouveauFichier.setContenu(contenu);
+                        nouveauFichier.setDateAjout(LocalDateTime.now());
+                        nouveauFichier.setDateModification(dateModification);
+                        fichierRepository.save(nouveauFichier);
                     }
                 } else {
                     System.out.println("Fichier ignoré ou non valide : " + fichier.getName());
