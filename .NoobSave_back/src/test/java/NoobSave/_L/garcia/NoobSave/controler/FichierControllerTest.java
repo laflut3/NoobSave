@@ -34,8 +34,8 @@ public class FichierControllerTest {
     @Test
     public void testObtenirTousLesFichiers() {
         // Préparer des données factices
-        Fichier fichier1 = new Fichier(1L, "test1.txt", "text/plain", null, null, null);
-        Fichier fichier2 = new Fichier(2L, "test2.txt", "text/plain", null, null, null);
+        Fichier fichier1 = new Fichier(1L, "test1.txt", "text/plain","/", null, null, null);
+        Fichier fichier2 = new Fichier(2L, "test2.txt", "text/plain", "/", null, null, null);
         List<Fichier> fichiers = Arrays.asList(fichier1, fichier2);
 
         when(fichierService.obtenirTousLesFichiers()).thenReturn(fichiers);
@@ -50,7 +50,7 @@ public class FichierControllerTest {
     @Test
     public void testTelechargerFichier_FichierTrouve() {
         // Préparer un fichier factice
-        Fichier fichier = new Fichier(1L, "test.txt", "text/plain", null, null, "Contenu".getBytes());
+        Fichier fichier = new Fichier(1L, "test.txt", "text/plain","/", null, null, "Contenu".getBytes());
         when(fichierService.obtenirFichierParId(1L)).thenReturn(Optional.of(fichier));
 
         ResponseEntity<?> response = fichierController.telechargerFichier(1L);
