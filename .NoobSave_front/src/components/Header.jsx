@@ -1,7 +1,9 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import {Link} from "react-router-dom";
+import {useState} from "react";
+import {FaUser} from "react-icons/fa";
+import {IoMdSettings} from "react-icons/io";
 
-function Header({ toggleSidebar }) {
+function Header({toggleSidebar}) {
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -54,12 +56,20 @@ function Header({ toggleSidebar }) {
                 </ul>
 
                 {/* Sidebar Toggle Button */}
-                <button
-                    className="hidden md:block bg-blue-700 text-white font-medium px-4 py-2 rounded-md shadow-md hover:bg-blue-800 transition"
-                    onClick={toggleSidebar}
-                >
-                    Gérer Utilisateurs
-                </button>
+                <div className={"space-x-4 flex"}>
+                    <button
+                        className="hidden md:block bg-blue-700 text-white font-medium px-4 py-2 rounded-md shadow-md hover:bg-blue-800 transition"
+                        onClick={toggleSidebar}
+                    >
+                        <FaUser/>
+                    </button>
+                    <Link
+                        to="/parametre"
+                        className="hidden md:block bg-blue-700 text-white font-medium px-4 py-2 rounded-md shadow-md hover:bg-blue-800 transition"
+                    >
+                        <IoMdSettings/>
+                    </Link>
+                </div>
 
                 {/* Mobile Menu Button */}
                 <button
