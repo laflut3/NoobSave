@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermission;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -28,19 +29,35 @@ public class FichierService {
      */
     private final FichierRepository fichierRepository;
 
+    private final ParametreService parametreService;
+
     /**
      * Chemin du répertoire local pour archiver les fichiers.
      */
     private final Path repertoire = Paths.get("./../archive");
+
+    private LocalDateTime lastSyncTime = LocalDateTime.now().minusYears(10);
 
     /**
      * declenche une sauvegarde toute les minute
      *
      * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
      */
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 5000)
     public void regularSave() throws IOException {
-        synchroniserFichiersDuRepertoire();
+
+        if (!parametreService.getParametre().isAutoSaveEnabled()) {
+            return;
+        }
+
+        long intervalMs = parametreService.getParametre().getAutoSaveInterval();
+
+        long sinceLastMs = Duration.between(lastSyncTime, LocalDateTime.now()).toMillis();
+
+        if (sinceLastMs >= intervalMs) {
+            synchroniserFichiersDuRepertoire();
+            lastSyncTime = LocalDateTime.now(); // on met à jour
+        }
     }
 
     /**
@@ -154,8 +171,6 @@ public class FichierService {
         return count;
     }
 
-
-
     /**
      * Récupère tous les fichiers enregistrés dans la base de données.
      *
@@ -184,7 +199,9 @@ public class FichierService {
      */
     public boolean estUnFichierValide(File fichier) {
         String nom = fichier.getName().toLowerCase();
-        return nom.endsWith(".pdf") || nom.endsWith(".txt") || nom.endsWith(".docx");
+        List<String> allowedExtensions = parametreService.getAllowedFileExtensions();
+
+        return allowedExtensions.stream().anyMatch(nom::endsWith);
     }
 
     /**
