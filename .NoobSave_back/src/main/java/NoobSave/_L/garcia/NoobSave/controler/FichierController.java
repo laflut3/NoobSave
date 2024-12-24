@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -98,5 +101,19 @@ public class FichierController {
         return ResponseEntity.ok(restoredCount + " fichier(s) restauré(s) avec succès !");
     }
 
+    @GetMapping("/subdirectories")
+    public ResponseEntity<List<String>> getSubdirectories() {
+        return ResponseEntity.ok(fichierService.listerSousRepertoires());
+    }
+
+
+    @GetMapping("/restore-sous-repertoire")
+    public ResponseEntity<String> restaurerSousRepertoire(@RequestParam String sousRepertoire) {
+        int restoredCount = fichierService.restaurerFichiersPourSousRepertoire(sousRepertoire);
+        return ResponseEntity.ok(
+                restoredCount + " fichier(s) restauré(s) pour le sous-répertoire : " +
+                        (sousRepertoire.isEmpty() ? "(racine)" : sousRepertoire)
+        );
+    }
 }
 

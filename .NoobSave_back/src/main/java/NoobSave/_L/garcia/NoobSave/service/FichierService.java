@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -15,6 +16,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Service pour gérer les opérations sur les fichiers, y compris la synchronisation avec le répertoire,
@@ -223,51 +226,7 @@ public class FichierService {
         System.out.println("Fichier supprimé de la base de données : " + fichier.getNom());
     }
 
-    public int restaurerFichiersManquants() {
-        List<Fichier> fichiers = fichierRepository.findAll();
-        int restoredCount = 0;
-
-        // Ensemble de permissions (rwx pour owner, group, others)
-        Set<PosixFilePermission> perms = EnumSet.of(
-                PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE
-        );
-
-        for (Fichier fichier : fichiers) {
-            Path cheminFichier = Paths.get(fichier.getChemin());
-
-            // Si le chemin n'est pas absolu, on le résout par rapport au répertoire "archive"
-            if (!cheminFichier.isAbsolute()) {
-                cheminFichier = repertoire.resolve(cheminFichier).normalize();
-            }
-
-            if (!Files.exists(cheminFichier)) {
-                try {
-                    // Créer les répertoires parents si nécessaire
-                    if (cheminFichier.getParent() != null) {
-                        Files.createDirectories(cheminFichier.getParent());
-                        // Appliquer les permissions sur tous les répertoires parents également
-                        appliquerPermissionsSurArborescence(cheminFichier.getParent(), perms);
-                    }
-
-                    // Écrire le contenu du fichier
-                    Files.write(cheminFichier, fichier.getContenu(), StandardOpenOption.CREATE_NEW);
-                    System.out.println("Fichier restauré : " + fichier.getNom() + " à l'emplacement " + cheminFichier.toAbsolutePath());
-
-                    // Appliquer les permissions POSIX sur le fichier
-                    Files.setPosixFilePermissions(cheminFichier, perms);
-                    restoredCount++;
-
-                } catch (IOException e) {
-                    System.out.println("Erreur lors de la restauration du fichier " + fichier.getNom() + " : " + e.getMessage());
-                }
-            }
-        }
-
-        return restoredCount;
-    }
-
+    /*=============================== Restauration ===============================*/
     /**
      * Applique de manière récursive les permissions spécifiées sur le répertoire donné,
      * ainsi que sur tous ses répertoires parents, jusqu'à la racine spécifiée.
@@ -287,5 +246,114 @@ public class FichierService {
             current = current.getParent();
         }
     }
+
+    private String extraireSousRepertoire(String cheminComplet) {
+        Path pathNormalise = Paths.get(cheminComplet).normalize().toAbsolutePath();
+        Path archiveRoot = repertoire.normalize().toAbsolutePath();
+
+        if (pathNormalise.startsWith(archiveRoot)) {
+            Path relative = archiveRoot.relativize(pathNormalise);
+            return relative.getParent() != null ? relative.getParent().toString() : "";
+        }
+        return "INCONNU";
+    }
+
+
+    public List<String> listerSousRepertoires() {
+        List<Fichier> fichiers = fichierRepository.findAll();
+
+        Set<String> sousRepertoires = new HashSet<>();
+        for (Fichier fichier : fichiers) {
+            String sousRep = extraireSousRepertoire(fichier.getChemin());
+            if (!"INCONNU".equals(sousRep)) {
+                sousRepertoires.add(sousRep);
+            }
+        }
+
+        return sousRepertoires.stream().sorted().collect(Collectors.toList());
+    }
+
+
+    public int restaurerFichiersManquants() {
+        List<Fichier> fichiers = fichierRepository.findAll();
+
+        // Ensemble de permissions (rwx pour tout le monde)
+        Set<PosixFilePermission> perms = EnumSet.of(
+                PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE
+        );
+
+        // Condition : on restaure TOUTES les entrées => (f -> true)
+        return restoreFiles(fichiers, f -> true, repertoire, perms);
+    }
+
+    public int restaurerFichiersPourSousRepertoire(String sousRepertoire) {
+        List<Fichier> fichiers = fichierRepository.findAll();
+
+        Set<PosixFilePermission> perms = EnumSet.of(
+                PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE
+        );
+
+        return restoreFiles(
+                fichiers,
+                f -> {
+                    String rep = extraireSousRepertoire(f.getChemin());
+                    // Si sousRepertoire est vide, c'est la racine
+                    return sousRepertoire.isEmpty() ? rep.isEmpty() : rep.equals(sousRepertoire);
+                },
+                repertoire,
+                perms
+        );
+    }
+
+    private int restoreFiles(List<Fichier> fichiers,
+                             Predicate<Fichier> condition,
+                             Path archiveRoot,
+                             Set<PosixFilePermission> perms) {
+        int restoredCount = 0;
+
+        for (Fichier fichier : fichiers) {
+            // On applique le filtre : si false, on skip
+            if (!condition.test(fichier)) {
+                continue;
+            }
+
+            Path cheminFichier = Paths.get(fichier.getChemin()).normalize();
+            // Si chemin pas absolu => on le résout dans archiveRoot
+            if (!cheminFichier.isAbsolute()) {
+                cheminFichier = archiveRoot.resolve(cheminFichier).normalize();
+            }
+
+            // Vérifie si le fichier est absent sur le disque => on restaure
+            if (!Files.exists(cheminFichier)) {
+                try {
+                    // Créer les répertoires parents si nécessaire
+                    if (cheminFichier.getParent() != null) {
+                        Files.createDirectories(cheminFichier.getParent());
+                        appliquerPermissionsSurArborescence(cheminFichier.getParent(), perms);
+                    }
+
+                    // Écrire le contenu
+                    Files.write(cheminFichier, fichier.getContenu(), StandardOpenOption.CREATE_NEW);
+                    // Appliquer les permissions
+                    Files.setPosixFilePermissions(cheminFichier, perms);
+
+                    restoredCount++;
+                    System.out.println("Fichier restauré : "
+                            + fichier.getNom()
+                            + " -> "
+                            + cheminFichier.toAbsolutePath());
+                } catch (IOException e) {
+                    System.out.println("Erreur de restauration pour "
+                            + fichier.getNom() + " : " + e.getMessage());
+                }
+            }
+        }
+        return restoredCount;
+    }
+
 
 }
