@@ -86,5 +86,17 @@ public class FichierController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    /**
+     * Restaure tous les fichiers en base de données sur le disque si ils n'y sont plus.
+     *
+     * @return ResponseEntity avec un message indiquant le nombre de fichiers restaurés.
+     */
+    @GetMapping("/restore")
+    public ResponseEntity<String> restaurerFichiers() {
+        int restoredCount = fichierService.restaurerFichiersManquants();
+        return ResponseEntity.ok(restoredCount + " fichier(s) restauré(s) avec succès !");
+    }
+
 }
 

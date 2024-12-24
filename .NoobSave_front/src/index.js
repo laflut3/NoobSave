@@ -10,6 +10,7 @@ import Guide from "./components/Guide";
 import Footer from "./components/Footer";
 import DetailTech from "./components/DetailTech";
 import SidebarUser from "./components/SidebarUser";
+import Parametre from "./components/Parametre";
 
 const App = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -28,6 +29,7 @@ const App = () => {
                 <Route path="/documents" element={<Documents />} />
                 <Route path="/guide" element={<Guide />} />
                 <Route path="/detail" element={<DetailTech />} />
+                <Route path="/parametre" element={<Parametre/>}/>
             </Routes>
             <Footer />
         </Router>
