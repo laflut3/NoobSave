@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaRegClock, FaFileAlt, FaPlay, FaPause } from "react-icons/fa";
 
 /**
  * Types de fichiers possibles à cocher.
@@ -23,7 +24,9 @@ export default function Parametre() {
                 setIntervalMs(data.autoSaveInterval);
 
                 // Conversion string -> tableau (si besoin)
-                const existing = data.allowedFileExtensions?.split(",").map((ext) => ext.trim()) || [];
+                const existing = data.allowedFileExtensions
+                    ?.split(",")
+                    .map((ext) => ext.trim()) || [];
                 setCheckedExtensions(existing);
             })
             .catch(console.error);
@@ -74,35 +77,57 @@ export default function Parametre() {
 
     if (!param) {
         return (
-            <section className="min-h-screen flex items-center justify-center">
-                <div className="text-gray-600">Chargement...</div>
+            <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-pink-100">
+                <div className="text-gray-700 text-xl">Chargement...</div>
             </section>
         );
     }
 
     return (
-        <section className="min-h-screen bg-gray-100 p-8">
-            <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold mb-4 text-center">Paramètres</h2>
+        <section className="min-h-screen bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center py-12 px-4">
+            <div
+                className="
+          max-w-xl w-full bg-white rounded-lg shadow-lg p-6
+          animate-fadeIn
+        "
+            >
+                <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+                    Paramètres de <span className="text-blue-500">NoobSave</span>
+                </h2>
 
                 {/* Bloc : Sauvegarde automatique */}
-                <div className="bg-gray-50 p-4 rounded-md mb-4 flex items-center justify-between">
-                    <div>
-                        <label className="font-semibold">Sauvegarde automatique</label>
-                        <p className="text-sm text-gray-500">
-                            Activez ou désactivez la sauvegarde automatique.
-                        </p>
+                <div className="mb-6 p-4 rounded-md border border-gray-200">
+                    <div className="flex items-center mb-2">
+                        {/* Icône */}
+                        <div className="text-blue-500 mr-2">
+                            {enabled ? <FaPlay size={20} /> : <FaPause size={20} />}
+                        </div>
+                        <h3 className="font-semibold text-gray-700 flex-1">
+                            Sauvegarde automatique
+                        </h3>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            className="h-5 w-5"
-                            checked={enabled}
-                            onChange={(e) => setEnabled(e.target.checked)}
-                        />
+                    <p className="text-sm text-gray-500 mb-3">
+                        Activez ou désactivez la sauvegarde automatique.
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                className="h-5 w-5 text-blue-600"
+                                checked={enabled}
+                                onChange={(e) => setEnabled(e.target.checked)}
+                            />
+                            <span className="text-gray-700">
+                {enabled ? "Activé" : "Désactivé"}
+              </span>
+                        </label>
                         <button
                             onClick={updateAutoSave}
-                            className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            className="
+                px-3 py-1 bg-blue-500 text-white rounded-md
+                hover:bg-blue-600 transition-colors
+              "
                         >
                             Appliquer
                         </button>
@@ -110,25 +135,38 @@ export default function Parametre() {
                 </div>
 
                 {/* Bloc : Intervalle de sauvegarde */}
-                <div className="bg-gray-50 p-4 rounded-md mb-4 flex items-center justify-between">
-                    <div>
-                        <label className="font-semibold">Intervalle (ms)</label>
-                        <p className="text-sm text-gray-500">
-                            Définissez la fréquence de la sauvegarde automatique. Minimum: 5000 ms.
-                        </p>
+                <div className="mb-6 p-4 rounded-md border border-gray-200">
+                    <div className="flex items-center mb-2">
+                        <div className="text-green-500 mr-2">
+                            <FaRegClock size={20} />
+                        </div>
+                        <h3 className="font-semibold text-gray-700 flex-1">
+                            Intervalle de sauvegarde (ms)
+                        </h3>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <p className="text-sm text-gray-500 mb-3">
+                        Définissez la fréquence de la sauvegarde automatique.
+                        <br />
+                        Minimum : 5000 ms.
+                    </p>
+                    <div className="flex items-center justify-between space-x-2">
                         <input
                             type="number"
-                            min="5000" // empêche côté UI de descendre sous 5000
+                            min="5000"
                             step="1000"
-                            className="border border-gray-300 rounded-md p-1 w-24 text-right"
+                            className="
+                border border-gray-300 rounded-md p-1 w-24 text-center
+                focus:outline-none focus:border-blue-400
+              "
                             value={intervalMs}
                             onChange={handleIntervalChange}
                         />
                         <button
                             onClick={updateInterval}
-                            className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            className="
+                px-3 py-1 bg-green-500 text-white rounded-md
+                hover:bg-green-600 transition-colors
+              "
                         >
                             Appliquer
                         </button>
@@ -136,18 +174,31 @@ export default function Parametre() {
                 </div>
 
                 {/* Bloc : Types de fichiers autorisés */}
-                <div className="bg-gray-50 p-4 rounded-md mb-4">
-                    <label className="font-semibold block mb-2">Types de fichiers autorisés</label>
+                <div className="mb-2 p-4 rounded-md border border-gray-200">
+                    <div className="flex items-center mb-2">
+                        <div className="text-purple-500 mr-2">
+                            <FaFileAlt size={20} />
+                        </div>
+                        <h3 className="font-semibold text-gray-700 flex-1">
+                            Types de fichiers autorisés
+                        </h3>
+                    </div>
                     <p className="text-sm text-gray-500 mb-3">
-                        Cochez les extensions de fichiers à enregistrer dans la base.
+                        Cochez les extensions de fichiers à enregistrer.
                     </p>
 
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-wrap gap-4 mb-4">
                         {possibleFileTypes.map((ext) => (
-                            <label key={ext} className="flex items-center space-x-2">
+                            <label
+                                key={ext}
+                                className="
+                  flex items-center space-x-2
+                  text-gray-700
+                "
+                            >
                                 <input
                                     type="checkbox"
-                                    className="h-5 w-5"
+                                    className="h-5 w-5 text-purple-600"
                                     checked={checkedExtensions.includes(ext)}
                                     onChange={() => handleCheckboxChange(ext)}
                                 />
@@ -156,10 +207,13 @@ export default function Parametre() {
                         ))}
                     </div>
 
-                    <div className="mt-4 flex justify-end">
+                    <div className="flex justify-end">
                         <button
                             onClick={updateFileTypes}
-                            className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            className="
+                px-3 py-1 bg-purple-500 text-white rounded-md
+                hover:bg-purple-600 transition-colors
+              "
                         >
                             Appliquer
                         </button>
