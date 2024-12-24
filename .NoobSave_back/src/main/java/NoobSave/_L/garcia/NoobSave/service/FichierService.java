@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -61,56 +62,72 @@ public class FichierService {
     public void synchroniserFichiersDuRepertoire() throws IOException {
         System.out.println("Début de la synchronisation à : " + LocalDateTime.now());
 
-        // Vérifiez si le répertoire existe
+        // Vérifie si le répertoire existe
         if (!Files.exists(repertoire)) {
             System.out.println("Le répertoire n'existe pas : " + repertoire.toAbsolutePath());
             Files.createDirectories(repertoire); // Création du répertoire s'il n'existe pas
             return;
         }
 
-        // Liste des fichiers sur disque
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(repertoire)) {
-            boolean fichierTrouve = false;
+        // Parcours récursif du répertoire
+        int nbFichiersTraites = traiterRepertoire(repertoire);
 
-            System.out.println("====================================================================================");
-            for (Path fichierPath : stream) {
-                fichierTrouve = true;
-                File fichier = fichierPath.toFile();
+        if (nbFichiersTraites == 0) {
+            System.out.println("Aucun fichier détecté dans le répertoire (y compris les sous-répertoires) : " + repertoire.toAbsolutePath());
+        }
 
-                // Affiche les fichiers détectés
-                System.out.println("--------------------------------------------------------------------------------------");
+        System.out.println("Fin de la synchronisation à : " + LocalDateTime.now());
+    }
 
-                System.out.println("Fichier détecté : " + fichier.getName());
+    /**
+     * Parcourt récursivement un répertoire, traite les fichiers valides et ajoute ou met à jour
+     * leur contenu dans la base de données.
+     *
+     * @param repertoireActuel le répertoire à traiter
+     * @return le nombre de fichiers traités (ajoutés ou mis à jour)
+     * @throws IOException en cas d'erreur de lecture du répertoire
+     */
+    private int traiterRepertoire(Path repertoireActuel) throws IOException {
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(repertoireActuel)) {
+            for (Path chemin : stream) {
+                File fichier = chemin.toFile();
 
-                // Validation du fichier
-                if (fichier.isFile() && estUnFichierValide(fichier)) {
-                    System.out.println("Fichier valide trouvé : " + fichier.getName());
+                if (fichier.isDirectory()) {
+                    // Appel récursif pour les répertoires
+                    count += traiterRepertoire(chemin);
+                } else if (fichier.isFile() && estUnFichierValide(fichier)) {
+                    System.out.println("--------------------------------------------------------------------------------------");
+                    System.out.println("Fichier détecté : " + fichier.getName());
 
-                    // Lire le contenu du fichier
-                    byte[] contenu = Files.readAllBytes(fichier.toPath());
+                    byte[] contenu = Files.readAllBytes(chemin);
                     if (contenu == null || contenu.length == 0) {
                         System.out.println("Contenu vide ou non lisible pour le fichier : " + fichier.getName());
                         continue;
                     }
 
                     // Déterminer le type MIME
-                    String typeMime = Files.probeContentType(fichier.toPath());
+                    String typeMime = Files.probeContentType(chemin);
+                    if (typeMime == null) {
+                        typeMime = "application/octet-stream"; // type par défaut si inconnu
+                    }
                     System.out.println("Type MIME détecté : " + typeMime);
 
-                    // Gestion des fichiers dans la base de données
+                    // Récupérer le fichier existant si présent
                     Optional<Fichier> fichierExistant = fichierRepository.findByNom(fichier.getName());
                     LocalDateTime dateModification = LocalDateTime.ofInstant(
                             Instant.ofEpochMilli(fichier.lastModified()), ZoneId.systemDefault());
 
                     if (fichierExistant.isPresent()) {
                         Fichier entiteFichier = fichierExistant.get();
-
                         // Mise à jour si le contenu a changé
                         if (!Arrays.equals(entiteFichier.getContenu(), contenu)) {
                             System.out.println("Mise à jour du fichier existant : " + fichier.getName());
                             entiteFichier.setContenu(contenu);
                             entiteFichier.setDateModification(dateModification);
                             fichierRepository.save(entiteFichier);
+                        } else {
+                            System.out.println("Aucune modification détectée pour le fichier : " + fichier.getName());
                         }
                     } else {
                         // Nouveau fichier
@@ -118,26 +135,25 @@ public class FichierService {
                         Fichier nouveauFichier = new Fichier();
                         nouveauFichier.setNom(fichier.getName());
                         nouveauFichier.setType(typeMime);
-                        nouveauFichier.setChemin(fichierPath.toString());
+                        nouveauFichier.setChemin(chemin.toString());
                         nouveauFichier.setContenu(contenu);
                         nouveauFichier.setDateAjout(LocalDateTime.now());
                         nouveauFichier.setDateModification(dateModification);
                         fichierRepository.save(nouveauFichier);
                     }
-                } else {
+
+                    count++;
+                } else if (fichier.isFile()) {
                     System.out.println("Fichier ignoré ou non valide : " + fichier.getName());
                 }
             }
-
-            if (!fichierTrouve) {
-                System.out.println("Aucun fichier détecté dans le répertoire : " + repertoire.toAbsolutePath());
-            }
         } catch (IOException e) {
-            System.out.println("Erreur lors de la lecture du répertoire : " + e.getMessage());
+            System.out.println("Erreur lors de la lecture du répertoire : " + repertoireActuel.toAbsolutePath() + " - " + e.getMessage());
         }
 
-        System.out.println("Fin de la synchronisation à : " + LocalDateTime.now());
+        return count;
     }
+
 
 
     /**
@@ -188,6 +204,71 @@ public class FichierService {
 
         fichierRepository.delete(fichier);
         System.out.println("Fichier supprimé de la base de données : " + fichier.getNom());
+    }
+
+    public int restaurerFichiersManquants() {
+        List<Fichier> fichiers = fichierRepository.findAll();
+        int restoredCount = 0;
+
+        // Ensemble de permissions (rwx pour owner, group, others)
+        Set<PosixFilePermission> perms = EnumSet.of(
+                PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE
+        );
+
+        for (Fichier fichier : fichiers) {
+            Path cheminFichier = Paths.get(fichier.getChemin());
+
+            // Si le chemin n'est pas absolu, on le résout par rapport au répertoire "archive"
+            if (!cheminFichier.isAbsolute()) {
+                cheminFichier = repertoire.resolve(cheminFichier).normalize();
+            }
+
+            if (!Files.exists(cheminFichier)) {
+                try {
+                    // Créer les répertoires parents si nécessaire
+                    if (cheminFichier.getParent() != null) {
+                        Files.createDirectories(cheminFichier.getParent());
+                        // Appliquer les permissions sur tous les répertoires parents également
+                        appliquerPermissionsSurArborescence(cheminFichier.getParent(), perms);
+                    }
+
+                    // Écrire le contenu du fichier
+                    Files.write(cheminFichier, fichier.getContenu(), StandardOpenOption.CREATE_NEW);
+                    System.out.println("Fichier restauré : " + fichier.getNom() + " à l'emplacement " + cheminFichier.toAbsolutePath());
+
+                    // Appliquer les permissions POSIX sur le fichier
+                    Files.setPosixFilePermissions(cheminFichier, perms);
+                    restoredCount++;
+
+                } catch (IOException e) {
+                    System.out.println("Erreur lors de la restauration du fichier " + fichier.getNom() + " : " + e.getMessage());
+                }
+            }
+        }
+
+        return restoredCount;
+    }
+
+    /**
+     * Applique de manière récursive les permissions spécifiées sur le répertoire donné,
+     * ainsi que sur tous ses répertoires parents, jusqu'à la racine spécifiée.
+     */
+    private void appliquerPermissionsSurArborescence(Path chemin, Set<PosixFilePermission> perms) {
+        // Parcours en remontant les répertoires parents
+        Path current = chemin;
+        while (current != null && Files.exists(current)) {
+            try {
+                // On vérifie que c'est bien un répertoire avant d'appliquer les perms
+                if (Files.isDirectory(current)) {
+                    Files.setPosixFilePermissions(current, perms);
+                }
+            } catch (IOException e) {
+                System.out.println("Impossible d'appliquer les permissions sur : " + current + " - " + e.getMessage());
+            }
+            current = current.getParent();
+        }
     }
 
 }
