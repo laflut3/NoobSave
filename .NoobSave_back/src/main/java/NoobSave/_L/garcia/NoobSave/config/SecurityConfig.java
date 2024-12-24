@@ -18,7 +18,7 @@ public class SecurityConfig {
                         .csrf(AbstractHttpConfigurer::disable)
                         .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/api/fichiers/**").permitAll() // Autoriser les routes fichiers
-                                .requestMatchers("/api/users/**").permitAll() // Autoriser la connexion
+                                .requestMatchers("/api/**").permitAll() // Autoriser la connexion
                                 .anyRequest().authenticated() // Toutes les autres routes nécessitent une authentification
                         )
                         .build();
