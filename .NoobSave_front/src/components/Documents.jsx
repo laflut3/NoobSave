@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import axios from "axios";
 
 const Documents = () => {
@@ -19,7 +19,7 @@ const Documents = () => {
 
     const telechargerFichier = (id, nom) => {
         axios
-            .get(`http://localhost:8080/api/fichiers/${id}`, { responseType: "blob" })
+            .get(`http://localhost:8080/api/fichiers/${id}`, {responseType: "blob"})
             .then((response) => {
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement("a");
@@ -38,10 +38,17 @@ const Documents = () => {
             .catch((error) => console.error(error));
     };
 
+    const restore = () => {
+        axios
+            .get("http://localhost:8080/api/fichiers/restore")
+            .then((response) => console.log(response))
+            .catch((error) => console.error(error));
+    };
+
     const supprimerFichier = (id) => {
         if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
             axios
-                .delete(`http://localhost:8080/api/fichiers/${id}`, { withCredentials: true })
+                .delete(`http://localhost:8080/api/fichiers/${id}`, {withCredentials: true})
                 .then(() => {
                     console.log("Fichier supprimé !");
                     // Met à jour l'état en supprimant le fichier supprimé
@@ -109,7 +116,15 @@ const Documents = () => {
                 )}
             </div>
             <div className={"w-full flex justify-center p-10 text-center items-center gap-6"}>
-                <button onClick={save} className={"p-4 text-white font-bold flex text-center justify-center shadow-lg hover:shadow-xl bg-blue-500 hover:bg-blue-600 rounded-full"}>Déclencher la sauvegarde</button>
+                <button onClick={save}
+                        className={"p-4 text-white font-bold flex text-center justify-center shadow-lg hover:shadow-xl bg-blue-500 hover:bg-blue-600 rounded-full"}>
+                    Déclencher la sauvegarde
+                </button>
+                <button onClick={restore}
+                        className={"p-4 text-white font-bold flex text-center justify-center shadow-lg hover:shadow-xl bg-red-500 hover:bg-red-600 rounded-full"}>
+                    restorer les fichiers manquant
+                </button>
+
             </div>
         </section>
     );
