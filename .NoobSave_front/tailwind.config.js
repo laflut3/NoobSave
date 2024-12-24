@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
-        "./src/**/*.{js,jsx,ts,tsx}", // Ajuste selon la structure de ton projet
+        "./src/**/*.{js,jsx,ts,tsx}",
         "./public/index.html",
     ],
     theme: {
@@ -12,7 +12,7 @@ module.exports = {
                 accent: "#F59E0B", // Jaune
             },
             fontFamily: {
-                sans: ["Inter", "sans-serif"], // Ajoute une police moderne
+                sans: ["Inter", "sans-serif"],
                 mono: ["Roboto Mono", "monospace"],
             },
             container: {
@@ -20,6 +20,16 @@ module.exports = {
                 padding: "1rem",
             },
         },
+        keyframes: {
+            fadeIn: {
+                '0%': {opacity: 0, transform: 'translateY(10px)'},
+                '100%': {opacity: 1, transform: 'translateY(0)'},
+            },
+        },
+        animation: {
+            fadeIn: 'fadeIn 0.8s ease-out',
+        },
+
     },
     plugins: [],
 };
