@@ -4,12 +4,12 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Documents from "./components/Documents";
-import Header from "./components/Header";
+import Header from "./components/AllPage/Header";
 import Home from "./components/Home";
 import Guide from "./components/Guide";
-import Footer from "./components/Footer";
+import Footer from "./components/AllPage/Footer";
 import DetailTech from "./components/DetailTech";
-import SidebarUser from "./components/SidebarUser";
+import SidebarUser from "./components/AllPage/SidebarUser";
 import Parametre from "./components/Parametre";
 
 const App = () => {

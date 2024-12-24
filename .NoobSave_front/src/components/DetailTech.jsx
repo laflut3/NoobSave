@@ -2,7 +2,7 @@ import React from "react";
 
 function DetailTech() {
     return (
-        <section className="bg-gray-100 min-h-screen py-10">
+        <section className="bg-gray-100 min-h-screen flex flex-col justify-center p-32">
             <div className="container mx-auto px-6 lg:px-16">
                 {/* Titre Principal */}
                 <h1 className="text-4xl font-extrabold text-gray-800 mb-10 text-center">
