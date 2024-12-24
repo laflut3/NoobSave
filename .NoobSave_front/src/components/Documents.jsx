@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaDownload, FaTrash } from "react-icons/fa";
+import { FaDownload, FaTrash } from 'react-icons/fa';
 
 const Documents = () => {
     const [fichiers, setFichiers] = useState([]);
+    const [subdirectories, setSubdirectories] = useState([]);
 
-    // Fonction pour charger les fichiers
+    /** ============================================ CHARGEMENT DES FICHIERS ET DES CHEMINS ============================================ */
+
+    useEffect(() => {
+        chargerFichiers();
+        chargerSubdirectories();
+    }, []);
+
     const chargerFichiers = () => {
         axios
             .get("http://localhost:8080/api/fichiers")
@@ -13,10 +20,23 @@ const Documents = () => {
             .catch((error) => console.error(error));
     };
 
-    // Chargement initial des fichiers
-    useEffect(() => {
-        chargerFichiers();
-    }, []);
+    const chargerSubdirectories = () => {
+        axios
+            .get("http://localhost:8080/api/fichiers/subdirectories")
+            .then((response) => setSubdirectories(response.data))
+            .catch((error) => console.error(error));
+    };
+
+    /** ============================================ SAUVEGARDE ============================================ */
+
+    const save = () => {
+        axios
+            .get("http://localhost:8080/api/fichiers/save")
+            .then((response) => console.log(response))
+            .catch((error) => console.error(error));
+    };
+
+    /** ============================================ RESTAURATION ============================================ */
 
     const telechargerFichier = (id, nom) => {
         axios
@@ -32,19 +52,29 @@ const Documents = () => {
             .catch((error) => console.error(error));
     };
 
-    const save = () => {
-        axios
-            .get("http://localhost:8080/api/fichiers/save")
-            .then((response) => console.log(response))
-            .catch((error) => console.error(error));
-    };
-
     const restore = () => {
         axios
             .get("http://localhost:8080/api/fichiers/restore")
             .then((response) => console.log(response))
             .catch((error) => console.error(error));
     };
+
+    const restoreSubdirectory = (sousRep) => {
+        axios
+            .get(`http://localhost:8080/api/fichiers/restore-sous-repertoire?sousRepertoire=${encodeURIComponent(sousRep)}`)
+            .then((response) => {
+                console.log(response.data);
+                alert(response.data); // Afficher le résultat
+            })
+            .catch((error) => {
+                console.error("Erreur lors de la restauration :", error.response || error);
+                alert("Erreur : " + (error.response?.data || error.message));
+            });
+    };
+
+
+
+    /** ============================================ SUPPRESSION DE TOUT ============================================ */
 
     const supprimerFichier = (id) => {
         if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
@@ -64,7 +94,7 @@ const Documents = () => {
     };
 
     return (
-        <section className="min-h-screen w-full flex flex-col justify-center bg-gray-50 py-12 px-4">
+        <section className="min-h-screen w-full flex flex-col justify-center bg-gray-50 py-12 pt-32">
             {/* Titre Principal */}
             <div className="max-w-5xl mx-auto text-center mb-10">
                 <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 mb-3">
@@ -109,7 +139,7 @@ const Documents = () => {
                   "
                                     onClick={() => telechargerFichier(fichier.id, fichier.nom)}
                                 >
-                                    <FaDownload className="mr-2" />
+                                    <FaDownload className="mr-2"/>
                                     Télécharger
                                 </button>
 
@@ -123,7 +153,7 @@ const Documents = () => {
                   "
                                     onClick={() => supprimerFichier(fichier.id)}
                                 >
-                                    <FaTrash className="mr-2" />
+                                    <FaTrash className="mr-2"/>
                                     Supprimer
                                 </button>
                             </div>
@@ -168,6 +198,20 @@ const Documents = () => {
                 >
                     Restaurer les fichiers manquants
                 </button>
+            </div>
+            <div className="max-w-5xl mx-auto mb-10 p-10">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Sous-répertoires</h2>
+                <div className="flex flex-wrap gap-4">
+                    {subdirectories.map((rep) => (
+                        <button
+                            key={rep}
+                            onClick={() => restoreSubdirectory(rep)}
+                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded shadow"
+                        >
+                            Restaurer « {rep || "(racine)"} »
+                        </button>
+                    ))}
+                </div>
             </div>
         </section>
     );
