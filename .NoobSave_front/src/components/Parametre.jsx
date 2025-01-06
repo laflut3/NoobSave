@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { FaRegClock, FaFileAlt, FaPlay, FaPause } from "react-icons/fa";
+import React, {useEffect, useState} from "react";
+import {FaRegClock, FaFileAlt, FaPlay, FaPause} from "react-icons/fa";
+import {PiPath} from "react-icons/pi";
 
 /**
  * Types de fichiers possibles à cocher.
@@ -31,6 +32,51 @@ export default function Parametre() {
             })
             .catch(console.error);
     }, []);
+
+    const [savePath, setSavePath] = useState("");
+
+    useEffect(() => {
+        fetch("http://localhost:8080/api/parametres/save-path")
+            .then((res) => res.text())
+            .then(setSavePath)
+            .catch(console.error);
+    }, []);
+
+    const updateSavePath = (folderPath) => {
+        console.log("Chemin envoyé au backend :", folderPath); // Ajout de log
+
+        if (!folderPath || folderPath.trim() === "") {
+            console.error("Le chemin est vide ou invalide.");
+            return;
+        }
+
+        fetch(`http://localhost:8080/api/parametres/save-path?path=${encodeURIComponent(folderPath)}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`Erreur serveur : ${res.status}`);
+                }
+                console.log("Chemin sauvegardé :", folderPath);
+            })
+            .catch((err) => {
+                console.error("Erreur lors de la mise à jour du chemin :", err.message);
+            });
+    };
+
+
+    const deleteSavePath = () => {
+        fetch("http://localhost:8080/api/parametres/save-path", {
+            method: "DELETE",
+        })
+            .then(() => {
+                setSavePath(""); // Réinitialise le champ côté frontend
+            })
+            .catch(console.error);
+    };
 
     const updateAutoSave = () => {
         fetch(`http://localhost:8080/api/parametres/toggle-auto-save?enabled=${enabled}`, {
@@ -75,16 +121,19 @@ export default function Parametre() {
         setIntervalMs(val);
     };
 
+
     if (!param) {
         return (
-            <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-pink-100">
+            <section
+                className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-pink-100">
                 <div className="text-gray-700 text-xl">Chargement...</div>
             </section>
         );
     }
 
     return (
-        <section className="min-h-screen bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center py-12 px-4">
+        <section
+            className="min-h-screen bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center py-32 px-4">
             <div
                 className="
           max-w-xl w-full bg-white rounded-lg shadow-lg p-6
@@ -100,7 +149,7 @@ export default function Parametre() {
                     <div className="flex items-center mb-2">
                         {/* Icône */}
                         <div className="text-blue-500 mr-2">
-                            {enabled ? <FaPlay size={20} /> : <FaPause size={20} />}
+                            {enabled ? <FaPlay size={20}/> : <FaPause size={20}/>}
                         </div>
                         <h3 className="font-semibold text-gray-700 flex-1">
                             Sauvegarde automatique
@@ -138,7 +187,7 @@ export default function Parametre() {
                 <div className="mb-6 p-4 rounded-md border border-gray-200">
                     <div className="flex items-center mb-2">
                         <div className="text-green-500 mr-2">
-                            <FaRegClock size={20} />
+                            <FaRegClock size={20}/>
                         </div>
                         <h3 className="font-semibold text-gray-700 flex-1">
                             Intervalle de sauvegarde (ms)
@@ -146,7 +195,7 @@ export default function Parametre() {
                     </div>
                     <p className="text-sm text-gray-500 mb-3">
                         Définissez la fréquence de la sauvegarde automatique.
-                        <br />
+                        <br/>
                         Minimum : 5000 ms.
                     </p>
                     <div className="flex items-center justify-between space-x-2">
@@ -177,7 +226,7 @@ export default function Parametre() {
                 <div className="mb-2 p-4 rounded-md border border-gray-200">
                     <div className="flex items-center mb-2">
                         <div className="text-purple-500 mr-2">
-                            <FaFileAlt size={20} />
+                            <FaFileAlt size={20}/>
                         </div>
                         <h3 className="font-semibold text-gray-700 flex-1">
                             Types de fichiers autorisés
@@ -216,6 +265,66 @@ export default function Parametre() {
               "
                         >
                             Appliquer
+                        </button>
+                    </div>
+                </div>
+
+                {/* Bloc : Chemin de sauvegarde */}
+                <div className="mb-2 p-4 rounded-md border border-gray-200">
+                    <div className="flex items-center mb-2">
+                        <div className="text-red-500 mr-2">
+                            <PiPath size={20}/>
+                        </div>
+                        <h3 className="font-semibold text-gray-700 flex-1">
+                            Sélectionnez un dossier pour la sauvegarde
+                        </h3>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">
+                        Sélectionnez un dossier pour la sauvegarde ou entrez un chemin manuellement.
+                    </p>
+                    <div className="flex flex-col space-y-4 pb-5">
+                        <div
+                            className="flex items-center space-x-2 border border-gray-300 rounded-md p-2 bg-white shadow-sm">
+                            {/* Icône du chemin */}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6 text-blue-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                                />
+                            </svg>
+
+                            {/* Champ texte pour entrer le chemin */}
+                            <input
+                                type="text"
+                                placeholder="Chemin du dossier (ex: /home/user/docs)"
+                                value={savePath}
+                                onChange={(e) => setSavePath(e.target.value)}
+                                className="flex-1 outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Suppression du chemin */}
+                    <div className="flex text-end justify-end w-full space-x-2">
+                        <button
+                            onClick={() => updateSavePath(savePath)}
+                            className={"px-3 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"}
+                        >
+                            Enregistrer
+                        </button>
+                        <button
+                            onClick={deleteSavePath}
+                            className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                        >
+                            Supprimer le chemin
                         </button>
                     </div>
                 </div>

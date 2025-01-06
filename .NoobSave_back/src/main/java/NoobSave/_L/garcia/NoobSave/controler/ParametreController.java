@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/parametres")
 @RequiredArgsConstructor
 public class ParametreController {
@@ -46,4 +47,30 @@ public class ParametreController {
     public void setAllowedFileExtensions(@RequestParam List<String> filetypes) {
         parametreService.updateAllowedFileExtensions(filetypes);
     }
+
+    /**
+     * Met à jour le chemin de sauvegarde.
+     */
+    @PostMapping("/save-path")
+    public void setSavePath(@RequestParam String path) {
+        parametreService.updateSavePath(path);
+    }
+
+    /**
+     * Récupère le chemin de sauvegarde actuel.
+     */
+    @GetMapping("/save-path")
+    public String getSavePath() {
+        return parametreService.getParametre().getSavePath();
+    }
+
+    /**
+     * Supprime le chemin de sauvegarde actuel (réinitialise à null).
+     */
+    @DeleteMapping("/save-path")
+    public void deleteSavePath() {
+        parametreService.deleteSavePath();
+    }
+
+
 }

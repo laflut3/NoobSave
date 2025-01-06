@@ -5,6 +5,7 @@ import NoobSave._L.garcia.NoobSave.repository.ParametreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -79,4 +80,34 @@ public class ParametreService {
                 .map(String::trim)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Met à jour le chemin de sauvegarde.
+     */
+    public void updateSavePath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le chemin de sauvegarde ne peut pas être vide.");
+        }
+        File file = new File(path);
+        if (!file.exists() || !file.isDirectory()) {
+            throw new IllegalArgumentException("Le chemin spécifié n'est pas un répertoire valide : " + path);
+        }
+        Parametre p = getParametre();
+        System.out.println("Chemin reçu pour sauvegarde : " + path); // Journal
+        p.setSavePath(path);
+        parametreRepository.save(p);
+    }
+
+
+    /**
+     * Supprime le chemin de sauvegarde en le réinitialisant à null.
+     */
+    public void deleteSavePath() {
+        Parametre p = getParametre();
+        p.setSavePath(null); // Réinitialise le chemin
+        parametreRepository.save(p); // Sauvegarde les modifications
+    }
+
+
+
 }

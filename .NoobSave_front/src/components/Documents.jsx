@@ -64,7 +64,7 @@ const Documents = () => {
             .get(`http://localhost:8080/api/fichiers/restore-sous-repertoire?sousRepertoire=${encodeURIComponent(sousRep)}`)
             .then((response) => {
                 console.log(response.data);
-                alert(response.data); // Afficher le résultat
+                alert(response.data); // Afficher le rés     ultat
             })
             .catch((error) => {
                 console.error("Erreur lors de la restauration :", error.response || error);

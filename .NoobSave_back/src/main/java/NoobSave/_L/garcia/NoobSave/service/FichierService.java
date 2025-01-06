@@ -37,9 +37,15 @@ public class FichierService {
     /**
      * Chemin du répertoire local pour archiver les fichiers.
      */
-    private final Path repertoire = Paths.get("./../archive");
+    private final Path defaultPath = Paths.get("./../archive");
 
     private LocalDateTime lastSyncTime = LocalDateTime.now().minusYears(10);
+
+    private Path savePath(){
+        return Optional.ofNullable(parametreService.getParametre().getSavePath())
+                .map(Paths::get)
+                .orElse(defaultPath);
+    }
 
     /**
      * declenche une sauvegarde toute les minute
@@ -48,20 +54,22 @@ public class FichierService {
      */
     @Scheduled(fixedRate = 5000)
     public void regularSave() throws IOException {
-
         if (!parametreService.getParametre().isAutoSaveEnabled()) {
             return;
         }
 
         long intervalMs = parametreService.getParametre().getAutoSaveInterval();
-
         long sinceLastMs = Duration.between(lastSyncTime, LocalDateTime.now()).toMillis();
 
+        Path savePath = savePath();
+
         if (sinceLastMs >= intervalMs) {
-            synchroniserFichiersDuRepertoire();
-            lastSyncTime = LocalDateTime.now(); // on met à jour
+            synchroniserFichiersDuRepertoire(savePath); // Utilisation du chemin correct
+            lastSyncTime = LocalDateTime.now(); // mise à jour
         }
     }
+
+
 
     /**
      * declenche la sauvegarde
@@ -69,7 +77,8 @@ public class FichierService {
      * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
      */
     public void saveDeclencher() throws IOException {
-        synchroniserFichiersDuRepertoire();
+        Path savePath = savePath();
+        synchroniserFichiersDuRepertoire(savePath);
     }
 
     /**
@@ -79,7 +88,7 @@ public class FichierService {
      *
      * @throws IOException en cas d'erreur d'accès au répertoire ou de lecture des fichiers.
      */
-    public void synchroniserFichiersDuRepertoire() throws IOException {
+    public void synchroniserFichiersDuRepertoire(Path repertoire) throws IOException {
         System.out.println("Début de la synchronisation à : " + LocalDateTime.now());
 
         // Vérifie si le répertoire existe
@@ -98,6 +107,7 @@ public class FichierService {
 
         System.out.println("Fin de la synchronisation à : " + LocalDateTime.now());
     }
+
 
     /**
      * Parcourt récursivement un répertoire, traite les fichiers valides et ajoute ou met à jour
@@ -213,7 +223,7 @@ public class FichierService {
      * @param fichier instance de l'entité Fichier à supprimer.
      */
     public void supprimerFichier(Fichier fichier) {
-        Path fichierPath = repertoire.resolve(fichier.getNom());
+        Path fichierPath = defaultPath.resolve(fichier.getNom());
 
         try {
             Files.deleteIfExists(fichierPath);
@@ -249,7 +259,7 @@ public class FichierService {
 
     private String extraireSousRepertoire(String cheminComplet) {
         Path pathNormalise = Paths.get(cheminComplet).normalize().toAbsolutePath();
-        Path archiveRoot = repertoire.normalize().toAbsolutePath();
+        Path archiveRoot = defaultPath.normalize().toAbsolutePath();
 
         if (pathNormalise.startsWith(archiveRoot)) {
             Path relative = archiveRoot.relativize(pathNormalise);
@@ -285,7 +295,7 @@ public class FichierService {
         );
 
         // Condition : on restaure TOUTES les entrées => (f -> true)
-        return restoreFiles(fichiers, f -> true, repertoire, perms);
+        return restoreFiles(fichiers, f -> true, defaultPath, perms);
     }
 
     public int restaurerFichiersPourSousRepertoire(String sousRepertoire) {
@@ -304,7 +314,7 @@ public class FichierService {
                     // Si sousRepertoire est vide, c'est la racine
                     return sousRepertoire.isEmpty() ? rep.isEmpty() : rep.equals(sousRepertoire);
                 },
-                repertoire,
+                defaultPath,
                 perms
         );
     }

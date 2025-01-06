@@ -32,4 +32,13 @@ public class Parametre {
      * Ex : ".pdf,.txt,.docx"
      */
     private String allowedFileExtensions;
+
+    /**
+     * Chemin du répertoire ou fichier pour la sauvegarde.
+     * Ex : "/home/user/sauvegardes"
+     */
+    @Getter
+    @Setter
+    private String savePath;
+
 }
