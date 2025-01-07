@@ -1,14 +1,14 @@
 package NoobSave._L.garcia.NoobSave.repository;
 
 import NoobSave._L.garcia.NoobSave.entities.Fichier;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
 /**
  * Interface JpaRepository pour effectuer des opérations CRUD sur les entités Fichier.
  */
-public interface FichierRepository extends JpaRepository<Fichier, Long> {
+public interface FichierRepository extends MongoRepository<Fichier, String> {
 
     /**
      * Recherche un fichier dans la base de données en fonction de son nom.

@@ -2,7 +2,9 @@ package NoobSave._L.garcia.NoobSave.service;
 
 import NoobSave._L.garcia.NoobSave.entities.Fichier;
 import NoobSave._L.garcia.NoobSave.repository.FichierRepository;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -68,8 +70,6 @@ public class FichierService {
             lastSyncTime = LocalDateTime.now(); // mise à jour
         }
     }
-
-
 
     /**
      * declenche la sauvegarde
@@ -199,9 +199,10 @@ public class FichierService {
      * @param id identifiant du fichier.
      * @return un objet `Optional` contenant le fichier s'il existe, sinon vide.
      */
-    public Optional<Fichier> obtenirFichierParId(Long id) {
+    public Optional<Fichier> obtenirFichierParId(String id) {
         return fichierRepository.findById(id);
     }
+
 
     /**
      * Vérifie si un fichier est valide pour être enregistré.

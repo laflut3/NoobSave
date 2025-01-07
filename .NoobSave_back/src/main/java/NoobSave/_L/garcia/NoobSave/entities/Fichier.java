@@ -1,32 +1,27 @@
 package NoobSave._L.garcia.NoobSave.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Lob;
-
-import java.time.LocalDateTime;
-
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
- * Entité représentant un fichier enregistré dans la base de données.
+ * Entité représentant un fichier enregistré dans la base de données MongoDB.
  */
-@Entity
+@Document(collection = "fichiers") // Spécifie que cette classe correspond à une collection MongoDB
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Fichier {
 
     /**
-     * Identifiant unique du fichier, généré automatiquement.
+     * Identifiant unique du fichier (généré automatiquement par MongoDB).
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id; // MongoDB utilise des IDs sous forme de chaînes
 
     /**
      * Nom du fichier (avec extension).
@@ -39,7 +34,7 @@ public class Fichier {
     private String type;
 
     /**
-     * Chemin absolu du fichier
+     * Chemin absolu du fichier.
      */
     private String chemin;
 
@@ -54,10 +49,7 @@ public class Fichier {
     private LocalDateTime dateModification;
 
     /**
-     * Contenu binaire du fichier (stocké sous forme de blob).
+     * Contenu binaire du fichier (stocké sous forme de tableau d'octets).
      */
-    @Lob
     private byte[] contenu;
 }
-
-

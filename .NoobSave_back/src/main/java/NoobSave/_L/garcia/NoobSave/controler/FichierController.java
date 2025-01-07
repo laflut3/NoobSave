@@ -43,13 +43,16 @@ public class FichierController {
 
     /**
      * Récupère la liste de tous les fichiers enregistrés.
-     *
      * ResponseEntity contenant une liste de tous les fichiers.
      */
-    @GetMapping(path = "/save")
-    public ResponseEntity<String> declencherSauvegarde() throws IOException {
-        fichierService.saveDeclencher();
-        return ResponseEntity.ok("Sauvegarde déclenchée avec succès !");
+    @GetMapping("/save")
+    public ResponseEntity<String> declencherSauvegarde() {
+        try {
+            fichierService.saveDeclencher();
+            return ResponseEntity.ok("Sauvegarde déclenchée avec succès !");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Erreur lors de la sauvegarde : " + e.getMessage());
+        }
     }
 
     /**
@@ -59,7 +62,7 @@ public class FichierController {
      * @return ResponseEntity contenant le fichier sous forme de ressource binaire, ou un code 404 si le fichier n'existe pas.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ByteArrayResource> telechargerFichier(@PathVariable Long id) {
+    public ResponseEntity<ByteArrayResource> telechargerFichier(@PathVariable String id) {
         return fichierService.obtenirFichierParId(id)
                 .map(fichier -> {
                     ByteArrayResource resource = new ByteArrayResource(fichier.getContenu());
@@ -78,7 +81,7 @@ public class FichierController {
      * @return ResponseEntity avec un statut 200 si la suppression réussit, sinon un statut 404.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> supprimerFichier(@PathVariable Long id) {
+    public ResponseEntity<Void> supprimerFichier(@PathVariable String id) {
         Optional<Fichier> fichierOptional = fichierService.obtenirFichierParId(id);
 
         if (fichierOptional.isPresent()) {
