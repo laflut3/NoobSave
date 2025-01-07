@@ -23,34 +23,48 @@ else
     echo "Droits 777 vérifiés/ajustés sur le dossier archive."
 fi
 
+# Mise à jour de l'URI MongoDB
+SPRING_PROPERTIES_FILE="./.NoobSave_back/src/main/resources/application.properties"
 
-# Vérification des images Docker
-function check_and_pull_image() {
-    IMAGE=$1
-    if docker image inspect "$IMAGE" > /dev/null 2>&1; then
-        echo "L'image Docker $IMAGE est déjà téléchargée."
+if [ -f "$SPRING_PROPERTIES_FILE" ]; then
+    echo "Vérification de l'URI MongoDB..."
+
+    # Lecture de l'URI existante dans application.properties
+    EXISTING_URI=$(grep "^spring.data.mongodb.uri=" "$SPRING_PROPERTIES_FILE" | cut -d'=' -f2-)
+
+    if [ -z "$EXISTING_URI" ]; then
+        echo "Aucune URI MongoDB configurée."
     else
-        echo "Téléchargement de l'image Docker $IMAGE..."
-        docker pull "$IMAGE"
-        echo "Image $IMAGE téléchargée avec succès."
+        echo "URI actuelle : $EXISTING_URI"
     fi
-}
 
-check_and_pull_image "adminer:latest"
-check_and_pull_image "mariadb:latest"
+    # Demander à l'utilisateur une nouvelle URI ou conserver l'existante
+    read -p "Entrez l'URI MongoDB (laisser vide pour conserver l'actuelle) : " USER_INPUT_URI
+    if [ -n "$USER_INPUT_URI" ]; then
+        # Valider le format de l'URI MongoDB
+        if [[ "$USER_INPUT_URI" =~ ^mongodb\+srv://.+ ]]; then
+            echo "Mise à jour de l'URI MongoDB..."
 
-# Démarrage des conteneurs avec Docker Compose
-COMPOSE_DIR="./.NoobSave_back/src/main/resources/"
-if [ -d "$COMPOSE_DIR" ]; then
-    echo "Démarrage des conteneurs avec docker-compose..."
-    cd "$COMPOSE_DIR"
-    docker compose up -d
-    cd - > /dev/null
-    echo "Conteneurs démarrés."
+            # Supprimer l'ancienne ligne si elle existe
+            sed -i "/^spring.data.mongodb.uri=/d" "$SPRING_PROPERTIES_FILE"
+
+            # Insérer la nouvelle URI juste après la ligne `# MongoDB configuration`
+            sed -i "/# MongoDB configuration/a spring.data.mongodb.uri=$USER_INPUT_URI" "$SPRING_PROPERTIES_FILE"
+
+            echo "URI MongoDB mise à jour avec succès."
+        else
+            echo "Erreur : L'URI MongoDB fournie est invalide."
+            exit 1
+        fi
+    else
+        echo "URI MongoDB conservée."
+    fi
 else
-    echo "Erreur : Le répertoire Docker Compose ($COMPOSE_DIR) n'existe pas."
+    echo "Erreur : Le fichier application.properties est introuvable dans $SPRING_PROPERTIES_FILE."
     exit 1
 fi
+
+
 
 # Démarrage de l'application Spring Boot
 SPRING_BOOT_DIR="./.NoobSave_back/"

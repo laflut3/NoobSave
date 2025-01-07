@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# Arrêt immédiat des conteneurs Docker
-echo "Arrêt des conteneurs Docker..."
-COMPOSE_DIR="./.NoobSave_back/src/main/resources/"
-if [ -d "$COMPOSE_DIR" ]; then
-    cd "$COMPOSE_DIR"
-    docker compose down
-    cd - > /dev/null
-    echo "Conteneurs Docker arrêtés."
-else
-    echo "Erreur : Le répertoire Docker Compose ($COMPOSE_DIR) n'existe pas."
-fi
-
 # Arrêt des processus React
 echo "Arrêt du serveur React..."
 REACT_PID=$(pgrep -f "npm start")
