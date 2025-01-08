@@ -12,16 +12,18 @@ CYAN="\033[0;36m"
 BOLD="\033[1m"
 RESET="\033[0m"
 
-# Arrêt immédiat en cas d'erreur
+# Arrêt immédiat en cas d'erreur dans le script
 set -e
+
+# Nettoyage de l’écran
 clear
 
 ###############################################################################
 #                           BARRE DE PROGRESSION                               #
 ###############################################################################
 progress_bar() {
-  local duration=$1
-  local msg="$2"
+  local duration=$1  # Nombre d'étapes pour la progression
+  local msg="$2"     # Message à afficher (optionnel)
 
   [ -n "$msg" ] && echo -e "$msg"
 
@@ -37,20 +39,19 @@ progress_bar() {
 ###############################################################################
 #                           DÉBUT DU SCRIPT                                   #
 ###############################################################################
-clear
 
-# Petit ASCII art
+# (Optionnel) Petit ASCII art pour le visuel
 echo -e "${BOLD}${MAGENTA}"
-echo "     _   __           ____   ____                 "
-echo "    / | / /___ ______/ __ \ / __ \___  ____  ___  "
-echo "   /  |/ / __ \`/ ___/ / / // / / / _ \/ __ \/ _ \ "
-echo "  / /|  / /_/ (__  ) /_/ // /_/ /  __/ /_/ /  __/ "
-echo " /_/ |_/\__,_/____/____(_)____/\___/ .___/\___/  "
-echo "                                 /_/              "
-echo -e "          NOOB SAVE - Script de lancement${RESET}\n"
+echo "    _   __           ____   ____                "
+echo "   / | / /___ ______/ __ \ / __ \___  ____  ___ "
+echo "  /  |/ / __ \`/ ___/ / / // / / / _ \/ __ \/ _ \\"
+echo " / /|  / /_/ (__  ) /_/ // /_/ /  __/ /_/ /  __/ "
+echo "/_/ |_/\__,_/____/____(_)____/\___/ .___/\___/  "
+echo "                                /_/             "
+echo -e "     NOOB SAVE - Script de lancement (DEBUG)${RESET}\n"
 
 ###############################################################################
-# 1. Vérification du dossier 'archive'
+#                  1. CRÉATION / VÉRIFICATION DU DOSSIER ARCHIVE             #
 ###############################################################################
 ARCHIVE_FILE="archive"
 
@@ -59,20 +60,21 @@ echo -e "${YELLOW}• Vérification du dossier 'archive'...${RESET}"
 if [ ! -e "$ARCHIVE_FILE" ]; then
     mkdir "$ARCHIVE_FILE"
     echo "Dossier 'archive' créé."
-    sudo chmod 777 "$ARCHIVE_FILE" &>/dev/null
+    sudo chmod 777 "$ARCHIVE_FILE"
     echo "Droits 777 accordés au dossier 'archive'."
 elif [ -f "$ARCHIVE_FILE" ]; then
     echo -e "${RED}Erreur : 'archive' existe déjà en tant que fichier.${RESET}"
     exit 1
 else
     echo "Le dossier 'archive' existe déjà."
-    sudo chmod 777 "$ARCHIVE_FILE" &>/dev/null
+    sudo chmod 777 "$ARCHIVE_FILE"
     echo "Droits 777 vérifiés/ajustés sur le dossier 'archive'."
 fi
+
 progress_bar 15 "Vérification terminée."
 
 ###############################################################################
-# 2. Démarrage de l'application Spring Boot
+#                2. DÉMARRAGE DE L'APPLICATION SPRING BOOT                    #
 ###############################################################################
 SPRING_BOOT_DIR="./.NoobSave_back/"
 
@@ -81,8 +83,8 @@ if [ -d "$SPRING_BOOT_DIR" ]; then
     cd "$SPRING_BOOT_DIR" || exit 1
 
     if [ -f "./mvnw" ]; then
-        # Redirige la stdout pour ne rien voir sauf en cas d'erreur
-        ./mvnw spring-boot:run 1>/dev/null &
+        # Ici, AUCUNE redirection => on voit TOUT
+        ./mvnw spring-boot:run &
         SPRING_BOOT_PID=$!
 
         progress_bar 20 "Spring Boot en cours de démarrage..."
@@ -92,14 +94,15 @@ if [ -d "$SPRING_BOOT_DIR" ]; then
         exit 1
     fi
 
-    cd - &>/dev/null
+    # Retour au répertoire initial
+    cd - || exit 1
 else
     echo -e "${RED}Erreur : Le répertoire Spring Boot ($SPRING_BOOT_DIR) n'existe pas.${RESET}"
     exit 1
 fi
 
 ###############################################################################
-# 3. Démarrage de l'application React
+#                 3. DÉMARRAGE DE L'APPLICATION REACT                         #
 ###############################################################################
 REACT_APP_DIR="./.NoobSave_front"
 
@@ -108,26 +111,30 @@ if [ -d "$REACT_APP_DIR" ]; then
     cd "$REACT_APP_DIR" || exit 1
 
     echo "Installation des dépendances NPM..."
-    npm install --loglevel=error 1>/dev/null
+    # Pas de redirection => on voit TOUT
+    npm install
     progress_bar 25 "Installation NPM..."
 
-    # Lancement de l'appli (stdout masquée, stderr visible)
-    CI=true npm start 1>/dev/null 2>&1 &
+    npm start &
     REACT_APP_PID=$!
 
     progress_bar 10 "Démarrage React..."
     echo -e "${GREEN}✓ Application React démarrée (PID: $REACT_APP_PID).${RESET}"
 
-    cd - &>/dev/null
+    # Retour au répertoire initial
+    cd - || exit 1
 else
     echo -e "${RED}Erreur : Le répertoire React ($REACT_APP_DIR) n'existe pas.${RESET}"
     exit 1
 fi
 
 ###############################################################################
-# 4. Message final & gestion signaux
+#                     4. MESSAGE FINAL ET GESTION DU SCRIPT                   #
 ###############################################################################
-echo -e "${BOLD}${BLUE}Toutes les applications ont été démarrées avec succès.${RESET}"
+echo -e "${BOLD}${BLUE}Toutes les applications (mode DEBUG) ont été démarrées.${RESET}"
 
+# Si le script reçoit CTRL+C ou un signal d’arrêt, on tue les processus lancés
 trap "kill $SPRING_BOOT_PID $REACT_APP_PID 2>/dev/null || true" SIGINT SIGTERM
+
+# On attend (wait) pour que le script continue à “vivre” tant que nos applis tournent
 wait
