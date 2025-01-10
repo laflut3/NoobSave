@@ -8,32 +8,36 @@ import lombok.Data;
 /**
  * Représente une requête d'inscription pour créer un nouvel utilisateur.
  * <p>
- * Cette classe contient les informations nécessaires pour qu'un utilisateur puisse s'inscrire,
- * telles que le nom d'utilisateur, l'adresse e-mail et le mot de passe.
+ * Cette classe contient les informations nécessaires pour qu'un utilisateur puisse s'inscrire :
+ * <ul>
+ *     <li>Nom d'utilisateur</li>
+ *     <li>Adresse e-mail</li>
+ *     <li>Mot de passe</li>
+ * </ul>
  * </p>
  *
  * <p>
- * <strong>Annotations :</strong>
+ * <strong>Annotations utilisées :</strong>
  * <ul>
- *   <li>{@code @Data} : Génère automatiquement les getters, setters, {@code toString}, {@code equals} et {@code hashCode}.</li>
- *   <li>{@code @Schema} : Fournit des métadonnées pour la documentation OpenAPI/Swagger.</li>
- *   <li>{@code @NotBlank} : Valide que les champs ne sont pas vides ou composés uniquement d'espaces blancs.</li>
- *   <li>{@code @Email} : Valide que le champ contient une adresse e-mail valide.</li>
+ *     <li>{@code @Data} : Génère automatiquement les méthodes getters, setters, {@code toString}, {@code equals} et {@code hashCode}.</li>
+ *     <li>{@code @Schema} : Fournit des métadonnées pour la documentation Swagger/OpenAPI.</li>
+ *     <li>{@code @NotBlank} : Valide que le champ n'est pas vide ni composé uniquement d'espaces blancs.</li>
+ *     <li>{@code @Email} : Valide que le champ contient une adresse e-mail valide.</li>
  * </ul>
  * </p>
  */
 @Data
-@Schema(description = "Requête d'inscription pour créer un nouvel utilisateur.")
+@Schema(description = "Requête pour inscrire un nouvel utilisateur. Contient les informations nécessaires pour créer un compte utilisateur.")
 public class RegisterRequest {
 
     /**
      * Le nom d'utilisateur choisi par l'utilisateur.
      * <p>
-     * Doit être fourni et ne doit pas être vide.
+     * Ce champ est obligatoire et ne doit pas être vide.
      * </p>
      */
     @Schema(
-            description = "Nom d'utilisateur choisi par l'utilisateur.",
+            description = "Nom d'utilisateur choisi par l'utilisateur. Doit être unique.",
             example = "JohnDoe",
             required = true
     )
@@ -43,11 +47,11 @@ public class RegisterRequest {
     /**
      * L'adresse e-mail de l'utilisateur.
      * <p>
-     * Doit être fournie, ne doit pas être vide et doit être une adresse e-mail valide.
+     * Ce champ est obligatoire, doit être valide et unique.
      * </p>
      */
     @Schema(
-            description = "Adresse e-mail de l'utilisateur.",
+            description = "Adresse e-mail de l'utilisateur. Doit être valide et unique.",
             example = "john.doe@example.com",
             required = true
     )
@@ -58,11 +62,11 @@ public class RegisterRequest {
     /**
      * Le mot de passe choisi par l'utilisateur.
      * <p>
-     * Doit être fourni et ne doit pas être vide.
+     * Ce champ est obligatoire et doit respecter les règles de sécurité définies (ex. : longueur minimale, complexité).
      * </p>
      */
     @Schema(
-            description = "Mot de passe choisi par l'utilisateur.",
+            description = "Mot de passe choisi par l'utilisateur. Doit respecter les exigences de sécurité.",
             example = "Secret123",
             required = true
     )

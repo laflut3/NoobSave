@@ -5,33 +5,40 @@ import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-
 /**
- * Configuration de Swagger/OpenAPI pour l'application.
- * <p>
- * Cette classe configure les informations de base de la documentation Swagger,
- * telles que le titre, la version et la description de l'API. Elle permet d'accéder
- * à une interface utilisateur Swagger UI pour interagir avec les endpoints de l'API.
- * </p>
+ * Configuration Swagger/OpenAPI pour la documentation de l'API.
  *
- * <p>
- * <strong>Annotations :</strong>
+ * Cette classe configure les informations principales de l'API, notamment :
  * <ul>
- *   <li>{@code @Configuration} : Indique que cette classe contient des définitions de beans Spring.</li>
+ *     <li>Le titre</li>
+ *     <li>La version</li>
+ *     <li>La description</li>
  * </ul>
- * </p>
+ * Ces informations apparaîtront dans l'interface Swagger UI, permettant d'interagir avec les endpoints de l'API.
+ *
+ * <strong>Annotation :</strong>
+ * <ul>
+ *     <li>{@code @Configuration} : Indique que cette classe définit des beans Spring.</li>
+ * </ul>
  */
+
+
 @Configuration
 public class SwaggerConfig {
 
     /**
-     * Configure et retourne une instance personnalisée d'OpenAPI.
+     * Définit et retourne une instance personnalisée d'{@link OpenAPI}.
      * <p>
-     * Cette configuration définit les informations principales de l'API, telles que le titre,
-     * la version et la description. Ces informations apparaîtront dans l'interface Swagger UI.
+     * Cette méthode configure les informations générales de l'API, telles que :
+     * <ul>
+     *     <li>Le titre : "API de gestion des fichiers".</li>
+     *     <li>La version : "1.0".</li>
+     *     <li>La description : "API pour gérer les fichiers avec des fonctionnalités de sauvegarde, téléchargement et restauration".</li>
+     * </ul>
+     * Ces informations sont affichées dans Swagger UI.
      * </p>
      *
-     * @return une instance configurée d'{@link OpenAPI}
+     * @return une instance configurée de {@link OpenAPI}
      */
     @Bean
     public OpenAPI customOpenAPI() {

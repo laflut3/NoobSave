@@ -23,16 +23,13 @@ import java.util.Optional;
 /**
  * Contrôleur REST pour gérer les fichiers via des requêtes HTTP.
  * <p>
- * Ce contrôleur expose différentes opérations pour :
+ * Ce contrôleur expose diverses fonctionnalités comme :
  * <ul>
- *   <li>Consulter la liste de tous les fichiers sauvegardés</li>
- *   <li>Télécharger un fichier par son identifiant</li>
- *   <li>Supprimer un fichier</li>
- *   <li>Déclencher une sauvegarde manuelle</li>
- *   <li>Restaurer un ou plusieurs fichiers manquants</li>
- *   <li>Obtenir la liste des sous-répertoires contenant des fichiers</li>
- *   <li>Restaurer les fichiers d’un sous-répertoire spécifique</li>
+ *   <li>Liste des fichiers sauvegardés</li>
+ *   <li>Téléchargement, suppression et restauration des fichiers</li>
+ *   <li>Détection et restauration des fichiers manquants</li>
  * </ul>
+ * </p>
  */
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -40,9 +37,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FichierController {
 
-    /**
-     * Service pour gérer les opérations sur les fichiers (CRUD, restauration, sauvegarde).
-     */
     private final FichierService fichierService;
 
     /**
@@ -51,11 +45,32 @@ public class FichierController {
      * @return ResponseEntity contenant une liste de tous les fichiers.
      */
     @Operation(
-            summary = "Obtenir la liste de tous les fichiers",
-            description = "Renvoie la liste complète des fichiers présents en base de données."
+            summary = "Obtenir tous les fichiers",
+            description = "Renvoie la liste complète des fichiers enregistrés en base de données avec leurs détails."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Liste des fichiers récupérée avec succès"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Liste des fichiers récupérée avec succès",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Fichier.class),
+                            examples = @ExampleObject(
+                                    name = "Exemple de réponse",
+                                    value = """
+                                    [
+                                      {
+                                        "id": "63c2f5e5ab12ef00123",
+                                        "nom": "document.pdf",
+                                        "type": "application/pdf",
+                                        "taille": 2048,
+                                        "contenu": "Base64EncodedData"
+                                      }
+                                    ]
+                                    """
+                            )
+                    )
+            ),
             @ApiResponse(responseCode = "500", description = "Erreur interne lors de la récupération des fichiers")
     })
     @GetMapping
@@ -64,17 +79,31 @@ public class FichierController {
     }
 
     /**
-     * Déclenche une sauvegarde manuelle des fichiers (copie sur le disque, etc.).
+     * Déclenche une sauvegarde manuelle des fichiers.
      *
-     * @return Message indiquant que la sauvegarde s'est bien déroulée ou mentionnant une erreur.
+     * @return Message de confirmation ou erreur.
      */
     @Operation(
             summary = "Déclencher une sauvegarde manuelle",
-            description = "Lance le processus de sauvegarde : copie et enregistrement des fichiers sur le support configuré."
+            description = "Lance le processus de sauvegarde de tous les fichiers enregistrés."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Sauvegarde déclenchée avec succès"),
-            @ApiResponse(responseCode = "500", description = "Erreur lors de la sauvegarde")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Sauvegarde déclenchée avec succès",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Sauvegarde déclenchée avec succès !")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erreur lors de la sauvegarde",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Erreur lors de la sauvegarde : Détails de l'erreur.")
+                    )
+            )
     })
     @GetMapping("/save")
     public ResponseEntity<String> declencherSauvegarde() {
@@ -87,14 +116,14 @@ public class FichierController {
     }
 
     /**
-     * Télécharge un fichier spécifique en fonction de son identifiant.
+     * Télécharge un fichier spécifique par son identifiant.
      *
-     * @param id identifiant du fichier à télécharger.
-     * @return ResponseEntity contenant le fichier sous forme de ressource binaire ou un code 404 si le fichier est introuvable.
+     * @param id Identifiant unique du fichier.
+     * @return Le fichier en tant que ressource binaire ou 404 si introuvable.
      */
     @Operation(
-            summary = "Télécharger un fichier par son identifiant",
-            description = "Permet de télécharger un fichier spécifique en se basant sur son identifiant unique."
+            summary = "Télécharger un fichier",
+            description = "Télécharge un fichier à partir de son identifiant unique dans la base de données."
     )
     @ApiResponses({
             @ApiResponse(
@@ -102,7 +131,8 @@ public class FichierController {
                     description = "Fichier téléchargé avec succès",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-                            schema = @Schema(type = "string", format = "binary")
+                            schema = @Schema(type = "string", format = "binary"),
+                            examples = @ExampleObject(value = "Contenu binaire du fichier")
                     )
             ),
             @ApiResponse(responseCode = "404", description = "Fichier non trouvé")
@@ -111,7 +141,7 @@ public class FichierController {
     public ResponseEntity<ByteArrayResource> telechargerFichier(
             @Parameter(
                     name = "id",
-                    description = "Identifiant unique du fichier en base de données",
+                    description = "Identifiant unique du fichier",
                     example = "63c2f5e5ab12ef00123",
                     required = true
             )
@@ -128,14 +158,14 @@ public class FichierController {
     }
 
     /**
-     * Supprime un fichier spécifique en fonction de son identifiant.
+     * Supprime un fichier spécifique.
      *
-     * @param id identifiant du fichier à supprimer.
-     * @return ResponseEntity avec un statut 200 si la suppression réussit, sinon 404.
+     * @param id Identifiant du fichier à supprimer.
+     * @return Code 200 si succès, 404 sinon.
      */
     @Operation(
             summary = "Supprimer un fichier",
-            description = "Supprime un fichier de la base de données et du disque (si présent) en fonction de son identifiant."
+            description = "Supprime un fichier à partir de son identifiant unique."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Fichier supprimé avec succès"),
@@ -161,84 +191,28 @@ public class FichierController {
     }
 
     /**
-     * Restaure tous les fichiers manquants sur le disque à partir de la base de données.
+     * Restaure tous les fichiers manquants.
      *
-     * @return ResponseEntity avec un message indiquant le nombre de fichiers restaurés.
+     * @return Nombre de fichiers restaurés.
      */
     @Operation(
             summary = "Restaurer tous les fichiers manquants",
-            description = "Compare les fichiers présents en base de données avec ceux sur le disque, et restaure ceux qui manquent."
+            description = "Compare les fichiers en base de données avec ceux sur le disque et restaure les fichiers manquants."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Nombre de fichiers restaurés renvoyé",
+                    description = "Nombre de fichiers restaurés",
                     content = @Content(
-                            mediaType = MediaType.TEXT_PLAIN_VALUE,
+                            mediaType = "text/plain",
                             examples = @ExampleObject(value = "5 fichier(s) restauré(s) avec succès !")
                     )
             ),
-            @ApiResponse(responseCode = "500", description = "Erreur lors de la restauration des fichiers")
+            @ApiResponse(responseCode = "500", description = "Erreur lors de la restauration")
     })
     @GetMapping("/restore")
     public ResponseEntity<String> restaurerFichiers() {
         int restoredCount = fichierService.restaurerFichiersManquants();
         return ResponseEntity.ok(restoredCount + " fichier(s) restauré(s) avec succès !");
-    }
-
-    /**
-     * Renvoie la liste des sous-répertoires détectés qui contiennent au moins un fichier en base de données.
-     *
-     * @return ResponseEntity contenant la liste des sous-répertoires.
-     */
-    @Operation(
-            summary = "Lister les sous-répertoires contenant des fichiers",
-            description = "Récupère la liste des sous-dossiers connus où des fichiers sont enregistrés."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Liste des sous-répertoires récupérée avec succès")
-    })
-    @GetMapping("/subdirectories")
-    public ResponseEntity<List<String>> getSubdirectories() {
-        return ResponseEntity.ok(fichierService.listerSousRepertoires());
-    }
-
-    /**
-     * Restaure tous les fichiers manquants pour un sous-répertoire donné.
-     *
-     * @param sousRepertoire Nom du sous-répertoire à restaurer (vide ou 'racine' si vous souhaitez restaurer le répertoire principal).
-     * @return ResponseEntity contenant le nombre de fichiers restaurés pour ce sous-répertoire.
-     */
-    @Operation(
-            summary = "Restaurer les fichiers d'un sous-répertoire",
-            description = "Permet de restaurer uniquement les fichiers manquants d'un sous-répertoire spécifique."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Nombre de fichiers restaurés pour le sous-répertoire indiqué",
-                    content = @Content(
-                            mediaType = MediaType.TEXT_PLAIN_VALUE,
-                            examples = {
-                                    @ExampleObject(name = "Sous-répertoire vide (racine)", value = "3 fichier(s) restauré(s) pour le sous-répertoire : (racine)"),
-                                    @ExampleObject(name = "Sous-répertoire images", value = "2 fichier(s) restauré(s) pour le sous-répertoire : images")
-                            }
-                    )
-            ),
-            @ApiResponse(responseCode = "500", description = "Erreur lors de la restauration du sous-répertoire")
-    })
-    @GetMapping("/restore-sous-repertoire")
-    public ResponseEntity<String> restaurerSousRepertoire(
-            @Parameter(
-                    name = "sousRepertoire",
-                    description = "Nom du sous-répertoire dans lequel restaurer les fichiers",
-                    example = "images"
-            )
-            @RequestParam String sousRepertoire) {
-        int restoredCount = fichierService.restaurerFichiersPourSousRepertoire(sousRepertoire);
-        return ResponseEntity.ok(
-                restoredCount + " fichier(s) restauré(s) pour le sous-répertoire : " +
-                        (sousRepertoire.isEmpty() ? "(racine)" : sousRepertoire)
-        );
     }
 }

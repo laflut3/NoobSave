@@ -8,70 +8,85 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * Représente un utilisateur dans le système.
  * <p>
- * Cette classe est une entité MongoDB qui stocke les informations relatives aux utilisateurs,
- * telles que le nom d'utilisateur, l'adresse e-mail, le mot de passe et le rôle administrateur.
+ * Cette entité MongoDB stocke les informations essentielles des utilisateurs, telles que :
+ * <ul>
+ *     <li>Nom d'utilisateur</li>
+ *     <li>Adresse e-mail</li>
+ *     <li>Mot de passe</li>
+ *     <li>Statut d'administrateur</li>
+ * </ul>
  * </p>
  *
  * <p>
- * <strong>Annotations :</strong>
+ * <strong>Annotations utilisées :</strong>
  * <ul>
- *   <li>{@code @Data} (Lombok) : Génère automatiquement les getters, setters, {@code toString}, {@code equals} et {@code hashCode}.</li>
- *   <li>{@code @Document} : Indique que cette classe est une entité MongoDB et définit la collection associée.</li>
- *   <li>{@code @Schema} (Swagger/OpenAPI) : Fournit des métadonnées pour la documentation OpenAPI/Swagger.</li>
+ *     <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals} et {@code hashCode}.</li>
+ *     <li>{@code @Document} : Spécifie que cette classe correspond à une collection MongoDB nommée "utilisateurs".</li>
+ *     <li>{@code @Schema} : Fournit des métadonnées Swagger pour chaque champ.</li>
  * </ul>
  * </p>
  */
 @Data
 @Document(collection = "utilisateurs")
-@Schema(description = "Entité représentant un utilisateur du système.")
+@Schema(description = "Entité représentant un utilisateur dans le système.")
 public class User {
 
     /**
-     * Identifiant unique de l'utilisateur.
-     * <p>
-     * Généré automatiquement par MongoDB.
-     * </p>
+     * Identifiant unique de l'utilisateur, généré automatiquement par MongoDB.
      */
     @Id
-    @Schema(description = "Identifiant unique de l'utilisateur.", example = "64a5f5f5f5f5f5f5f5f5f5f5")
+    @Schema(
+            description = "Identifiant unique de l'utilisateur généré par MongoDB.",
+            example = "64a5f5f5f5f5f5f5f5f5f5f5",
+            accessMode = Schema.AccessMode.READ_ONLY
+    )
     private String id;
 
     /**
-     * Nom d'utilisateur choisi par l'utilisateur.
-     * <p>
-     * Doit être unique dans le système.
-     * </p>
+     * Nom d'utilisateur unique choisi par l'utilisateur.
      */
-    @Schema(description = "Nom d'utilisateur choisi par l'utilisateur.", example = "JohnDoe", required = true)
+    @Schema(
+            description = "Nom d'utilisateur unique choisi par l'utilisateur.",
+            example = "JohnDoe",
+            required = true
+    )
     private String username;
 
     /**
-     * Adresse e-mail de l'utilisateur.
-     * <p>
-     * Doit être unique et valide.
-     * </p>
+     * Adresse e-mail unique et valide associée à l'utilisateur.
      */
-    @Schema(description = "Adresse e-mail de l'utilisateur.", example = "john.doe@example.com", required = true)
+    @Schema(
+            description = "Adresse e-mail unique et valide de l'utilisateur.",
+            example = "john.doe@example.com",
+            required = true
+    )
     private String email;
 
     /**
-     * Mot de passe de l'utilisateur.
+     * Mot de passe sécurisé (haché).
      * <p>
-     * Doit être stocké de manière sécurisée (haché).
+     * Ce champ ne doit jamais être exposé directement dans les réponses API.
+     * Utilisez des DTOs pour masquer les informations sensibles.
      * </p>
-     * <strong>Remarque :</strong> Ce champ ne devrait jamais être exposé dans les réponses API.
-     * Utilisez des DTOs pour contrôler les informations exposées.
      */
-    @Schema(description = "Mot de passe de l'utilisateur. (Ne pas exposer dans les réponses API)", example = "Secret123", accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(
+            description = "Mot de passe de l'utilisateur. (Stocké de manière sécurisée, non exposé dans les réponses API.)",
+            example = "hashed_password",
+            accessMode = Schema.AccessMode.WRITE_ONLY
+    )
     private String password;
 
     /**
-     * Indique si l'utilisateur a des privilèges d'administrateur.
+     * Indique si l'utilisateur possède des privilèges d'administrateur.
      * <p>
      * Par défaut, cette valeur est `false`.
      * </p>
      */
-    @Schema(description = "Indique si l'utilisateur est administrateur.", example = "false", required = true)
+    @Schema(
+            description = "Indique si l'utilisateur possède des privilèges d'administrateur.",
+            example = "false",
+            required = true
+    )
     private boolean administrateur = false;
 
 }

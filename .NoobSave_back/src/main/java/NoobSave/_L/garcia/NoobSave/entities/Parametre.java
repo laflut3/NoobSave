@@ -8,25 +8,28 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Entité représentant les paramètres de configuration enregistrés dans MongoDB.
+ * Entité représentant les paramètres de configuration de l'application.
  * <p>
- * Cette classe stocke les paramètres liés à la sauvegarde automatique des fichiers, tels que
- * l'activation de la sauvegarde automatique, l'intervalle entre les sauvegardes,
- * les extensions de fichiers autorisées, et le chemin de sauvegarde.
+ * Cette classe contient les réglages liés à la sauvegarde automatique, tels que :
+ * <ul>
+ *     <li>Activation ou désactivation de la sauvegarde automatique</li>
+ *     <li>Intervalle entre deux sauvegardes automatiques</li>
+ *     <li>Extensions de fichiers autorisées</li>
+ *     <li>Chemin de sauvegarde</li>
+ * </ul>
  * </p>
  *
  * <p>
- * <strong>Annotations :</strong>
+ * <strong>Annotations utilisées :</strong>
  * <ul>
- *   <li>{@code @Data} (Lombok) : Génère automatiquement les getters, setters, {@code toString}, {@code equals} et {@code hashCode}.</li>
- *   <li>{@code @NoArgsConstructor} (Lombok) : Génère un constructeur sans arguments.</li>
- *   <li>{@code @AllArgsConstructor} (Lombok) : Génère un constructeur avec tous les arguments.</li>
- *   <li>{@code @Document} : Indique que cette classe est une entité MongoDB et définit la collection associée.</li>
- *   <li>{@code @Schema} (Swagger/OpenAPI) : Fournit des métadonnées pour la documentation OpenAPI/Swagger.</li>
+ *     <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals} et {@code hashCode}.</li>
+ *     <li>{@code @NoArgsConstructor} et {@code @AllArgsConstructor} : Fournissent des constructeurs par défaut et avec arguments.</li>
+ *     <li>{@code @Document} : Spécifie que cette classe correspond à une collection MongoDB.</li>
+ *     <li>{@code @Schema} : Fournit des métadonnées pour Swagger/OpenAPI.</li>
  * </ul>
  * </p>
  */
-@Document(collection = "parametres") // Correspond à une collection MongoDB nommée "parametres"
+@Document(collection = "parametres")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,18 +37,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Parametre {
 
     /**
-     * Identifiant unique, généré automatiquement par MongoDB.
+     * Identifiant unique généré par MongoDB.
      */
     @Id
     @Schema(
-            description = "Identifiant unique de la configuration.",
+            description = "Identifiant unique de la configuration dans MongoDB.",
             example = "64a5f5f5f5f5f5f5f5f5f5f5",
             accessMode = Schema.AccessMode.READ_ONLY
     )
-    private String id; // MongoDB utilise des IDs sous forme de chaînes
+    private String id;
 
     /**
-     * Indique si la sauvegarde automatique est active ou non.
+     * Indique si la sauvegarde automatique est activée ou non.
      */
     @Schema(
             description = "Indique si la sauvegarde automatique est activée.",
@@ -56,32 +59,29 @@ public class Parametre {
 
     /**
      * Intervalle (en millisecondes) entre deux sauvegardes automatiques.
-     * Ex : 60000 = 60 secondes
      */
     @Schema(
-            description = "Intervalle en millisecondes entre deux sauvegardes automatiques.",
+            description = "Intervalle en millisecondes entre deux sauvegardes automatiques (par exemple, 60000 pour 60 secondes).",
             example = "60000",
             required = true
     )
     private long autoSaveInterval;
 
     /**
-     * Liste d'extensions autorisées, stockées en base sous forme de chaîne.
-     * Ex : ".pdf,.txt,.docx"
+     * Liste des extensions de fichiers autorisées, séparées par des virgules.
      */
     @Schema(
-            description = "Liste des extensions de fichiers autorisées pour la sauvegarde, séparées par des virgules.",
+            description = "Liste des extensions de fichiers autorisées pour la sauvegarde, séparées par des virgules (exemple : \".pdf,.txt,.docx\").",
             example = ".pdf,.txt,.docx",
             required = true
     )
     private String allowedFileExtensions;
 
     /**
-     * Chemin du répertoire ou fichier pour la sauvegarde.
-     * Ex : "/home/user/sauvegardes"
+     * Chemin où les sauvegardes sont stockées.
      */
     @Schema(
-            description = "Chemin du répertoire ou fichier où les sauvegardes seront stockées.",
+            description = "Chemin absolu du répertoire ou fichier où les sauvegardes seront stockées.",
             example = "/home/user/sauvegardes",
             required = true
     )

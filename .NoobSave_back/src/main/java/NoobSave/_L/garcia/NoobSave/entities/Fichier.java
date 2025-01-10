@@ -14,27 +14,32 @@ import java.time.LocalDateTime;
 /**
  * Entité représentant un fichier enregistré dans la base de données MongoDB.
  * <p>
- * Cette classe stocke les informations relatives aux fichiers, telles que
- * le nom, le type MIME, le chemin d'accès, les dates d'ajout et de modification,
- * ainsi que le contenu binaire du fichier.
+ * Cette classe contient les informations essentielles sur un fichier :
+ * <ul>
+ *     <li>Identifiant unique généré par MongoDB</li>
+ *     <li>Nom et type MIME</li>
+ *     <li>Chemin absolu du fichier</li>
+ *     <li>Dates d'ajout et de dernière modification</li>
+ *     <li>Contenu binaire (stocké sous forme de tableau d'octets)</li>
+ * </ul>
  * </p>
  *
  * <p>
- * <strong>Annotations :</strong>
+ * <strong>Annotations utilisées :</strong>
  * <ul>
- *   <li>{@code @Data} (Lombok) : Génère automatiquement les getters, setters, {@code toString}, {@code equals} et {@code hashCode}.</li>
- *   <li>{@code @NoArgsConstructor} (Lombok) : Génère un constructeur sans arguments.</li>
- *   <li>{@code @AllArgsConstructor} (Lombok) : Génère un constructeur avec tous les arguments.</li>
- *   <li>{@code @Document} : Indique que cette classe est une entité MongoDB et définit la collection associée.</li>
- *   <li>{@code @Schema} (Swagger/OpenAPI) : Fournit des métadonnées pour la documentation OpenAPI/Swagger.</li>
+ *     <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals}, et {@code hashCode}.</li>
+ *     <li>{@code @NoArgsConstructor} et {@code @AllArgsConstructor} : Fournissent des constructeurs par défaut et avec tous les arguments.</li>
+ *     <li>{@code @Document} : Indique que cette classe est une entité MongoDB et spécifie la collection.</li>
+ *     <li>{@code @Schema} : Fournit des métadonnées pour Swagger/OpenAPI.</li>
+ *     <li>{@code @NotBlank} et {@code @NotNull} : Assurent la validation des champs.</li>
  * </ul>
  * </p>
  */
-@Document(collection = "fichiers") // Spécifie que cette classe correspond à une collection MongoDB nommée "fichiers"
+@Document(collection = "fichiers")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Entité représentant un fichier enregistré dans le système.")
+@Schema(description = "Entité représentant un fichier enregistré dans la base de données MongoDB.")
 public class Fichier {
 
     /**
@@ -42,17 +47,17 @@ public class Fichier {
      */
     @Id
     @Schema(
-            description = "Identifiant unique du fichier.",
+            description = "Identifiant unique du fichier dans MongoDB.",
             example = "64a5f5f5f5f5f5f5f5f5f5f5",
             accessMode = Schema.AccessMode.READ_ONLY
     )
-    private String id; // MongoDB utilise des IDs sous forme de chaînes
+    private String id;
 
     /**
      * Nom du fichier (avec extension).
      */
     @Schema(
-            description = "Nom du fichier, incluant son extension.",
+            description = "Nom du fichier incluant son extension.",
             example = "document.pdf",
             required = true
     )
@@ -63,7 +68,7 @@ public class Fichier {
      * Type MIME du fichier (exemple : application/pdf).
      */
     @Schema(
-            description = "Type MIME du fichier, indiquant son format.",
+            description = "Type MIME du fichier, indiquant son format (ex. application/pdf).",
             example = "application/pdf",
             required = true
     )
@@ -71,10 +76,10 @@ public class Fichier {
     private String type;
 
     /**
-     * Chemin absolu du fichier.
+     * Chemin absolu où le fichier est stocké.
      */
     @Schema(
-            description = "Chemin absolu où le fichier est stocké sur le serveur.",
+            description = "Chemin absolu du fichier sur le serveur.",
             example = "/home/user/documents/document.pdf",
             required = true
     )
@@ -82,10 +87,10 @@ public class Fichier {
     private String chemin;
 
     /**
-     * Date d'ajout du fichier dans la base de données.
+     * Date et heure auxquelles le fichier a été ajouté à la base de données.
      */
     @Schema(
-            description = "Date et heure auxquelles le fichier a été ajouté à la base de données.",
+            description = "Date et heure d'ajout du fichier dans le système.",
             example = "2023-10-15T10:15:30",
             required = true
     )
@@ -93,7 +98,7 @@ public class Fichier {
     private LocalDateTime dateAjout;
 
     /**
-     * Date de la dernière modification du fichier.
+     * Date et heure de la dernière modification du fichier.
      */
     @Schema(
             description = "Date et heure de la dernière modification du fichier.",
@@ -106,13 +111,12 @@ public class Fichier {
     /**
      * Contenu binaire du fichier (stocké sous forme de tableau d'octets).
      * <p>
-     * Ce champ stocke le contenu réel du fichier sous forme binaire.
-     * Il est recommandé de gérer ce contenu de manière sécurisée et d'éviter
-     * de l'exposer directement via les API.
+     * Ce champ contient le contenu réel du fichier sous forme binaire.
+     * Il est recommandé de ne pas exposer ce champ directement via les API.
      * </p>
      */
     @Schema(
-            description = "Contenu binaire du fichier. (Ne pas exposer directement via les API)",
+            description = "Contenu binaire du fichier, généralement sous forme de tableau d'octets. Ne pas exposer directement via les API.",
             accessMode = Schema.AccessMode.READ_ONLY
     )
     private byte[] contenu;
