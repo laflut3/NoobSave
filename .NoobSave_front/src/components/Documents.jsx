@@ -1,10 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import axios from "axios";
-import { FaDownload, FaTrash } from 'react-icons/fa';
+import {FaDownload, FaTrash} from 'react-icons/fa';
 
 const Documents = () => {
     const [fichiers, setFichiers] = useState([]);
     const [subdirectories, setSubdirectories] = useState([]);
+    const token = localStorage.getItem("token");
+    const [isAdmin, setIsAdmin] = useState(null);
+
+    useEffect(() => {
+        if (token) {
+            fetch("http://localhost:8080/api/users/isAdmin", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log(data);
+                    setIsAdmin(data.admin);
+                })
+        }
+    })
 
     /** ============================================ CHARGEMENT DES FICHIERS ET DES CHEMINS ============================================ */
 
@@ -40,7 +57,7 @@ const Documents = () => {
 
     const telechargerFichier = (id, nom) => {
         axios
-            .get(`http://localhost:8080/api/fichiers/${id}`, { responseType: "blob" })
+            .get(`http://localhost:8080/api/fichiers/${id}`, {responseType: "blob"})
             .then((response) => {
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement("a");
@@ -64,7 +81,7 @@ const Documents = () => {
             .get(`http://localhost:8080/api/fichiers/restore-sous-repertoire?sousRepertoire=${encodeURIComponent(sousRep)}`)
             .then((response) => {
                 console.log(response.data);
-                alert(response.data); // Afficher le rés     ultat
+                alert(response.data);
             })
             .catch((error) => {
                 console.error("Erreur lors de la restauration :", error.response || error);
@@ -77,7 +94,7 @@ const Documents = () => {
     const supprimerFichier = (id) => {
         if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
             axios
-                .delete(`http://localhost:8080/api/fichiers/${id}`, { withCredentials: true })
+                .delete(`http://localhost:8080/api/fichiers/${id}`, {withCredentials: true})
                 .then(() => {
                     console.log("Fichier supprimé !");
                     // Met à jour l'état en supprimant le fichier supprimé
@@ -142,18 +159,20 @@ const Documents = () => {
                                 </button>
 
                                 {/* Supprimer */}
-                                <button
-                                    className="
+                                {token && isAdmin ? (
+                                    <button
+                                        className="
                     flex items-center px-4 py-2 bg-red-500 text-white
                     rounded-md shadow-sm hover:bg-red-600
                     focus:outline-none focus:ring-2 focus:ring-red-300
                     transition duration-200
                   "
-                                    onClick={() => supprimerFichier(fichier.id)}
-                                >
-                                    <FaTrash className="mr-2"/>
-                                    Supprimer
-                                </button>
+                                        onClick={() => supprimerFichier(fichier.id)}
+                                    >
+                                        <FaTrash className="mr-2"/>
+                                        Supprimer
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
                     ))
@@ -170,47 +189,51 @@ const Documents = () => {
             </div>
 
             {/* Boutons Sauvegarde / Restauration */}
-            <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center">
-                <button
-                    onClick={save}
-                    className="
+            {isAdmin ? (
+                <>
+                    <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center">
+                        <button
+                            onClick={save}
+                            className="
             flex items-center justify-center px-6 py-3
             text-white font-bold text-lg
             bg-blue-500 rounded-full shadow-lg
             hover:shadow-xl hover:bg-blue-600
             transition-transform transform hover:-translate-y-0.5
           "
-                >
-                    Déclencher la sauvegarde
-                </button>
+                        >
+                            Déclencher la sauvegarde
+                        </button>
 
-                <button
-                    onClick={restore}
-                    className="
+                        <button
+                            onClick={restore}
+                            className="
             flex items-center justify-center px-6 py-3
             text-white font-bold text-lg
             bg-red-500 rounded-full shadow-lg
             hover:shadow-xl hover:bg-red-600
             transition-transform transform hover:-translate-y-0.5
           "
-                >
-                    Restaurer les fichiers manquants
-                </button>
-            </div>
-            <div className="max-w-5xl mx-auto mb-10 p-10">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Sous-répertoires</h2>
-                <div className="flex flex-wrap gap-4">
-                    {subdirectories.map((rep) => (
-                        <button
-                            key={rep}
-                            onClick={() => restoreSubdirectory(rep)}
-                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded shadow"
                         >
-                            Restaurer « {rep || "(racine)"} »
+                            Restaurer les fichiers manquants
                         </button>
-                    ))}
-                </div>
-            </div>
+                    </div>
+                    <div className="max-w-5xl mx-auto mb-10 p-10">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Sous-répertoires</h2>
+                        <div className="flex flex-wrap gap-4">
+                            {subdirectories.map((rep) => (
+                                <button
+                                    key={rep}
+                                    onClick={() => restoreSubdirectory(rep)}
+                                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded shadow"
+                                >
+                                    Restaurer « {rep || "(racine)"} »
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            ) : null}
         </section>
     );
 };

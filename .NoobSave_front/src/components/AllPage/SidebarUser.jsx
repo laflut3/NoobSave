@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
     FaUser,
@@ -18,54 +18,91 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     const [password, setPassword] = useState("");
     const [isLoginForm, setIsLoginForm] = useState(true); // Pour basculer entre login et signup
 
-    // Gestion de la connexion
-    const handleLogin = async (e) => {
-        e.preventDefault();
+    // Vérifie au chargement si on a déjà un token dans localStorage
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            // Optionnel : vous pouvez tenter de récupérer l'utilisateur actuel
+            fetchCurrentUser(token);
+        }
+    }, []);
+
+    /**
+     * Récupère les infos de l'utilisateur courant en utilisant le token
+     */
+    const fetchCurrentUser = async (token) => {
         try {
-            const response = await axios.post(
-                "http://localhost:8080/api/users/login",
-                { username, password },
-                { withCredentials: true } // Inclure les cookies
-            );
-            setUserInfo(response.data); // Enregistrer les informations utilisateur
-            setIsLoggedIn(true); // Marquer comme connecté
-            toggleSidebar(); // Fermer la barre latérale
+            const response = await axios.get("http://localhost:8080/api/users/me", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setUserInfo(response.data);
+            setIsLoggedIn(true);
         } catch (error) {
-            if (error.response && error.response.status === 401) {
-                alert("Nom d'utilisateur ou mot de passe incorrect.");
-            } else {
-                console.error("Erreur de connexion :", error);
-                alert("Erreur de connexion.");
-            }
+            localStorage.removeItem("token");
+            setIsLoggedIn(false);
         }
     };
 
-    // Gestion de la création de compte
+
+    /**
+     * Gestion de la connexion (Login)
+     */
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:8080/api/auth/login", {
+                username,
+                password,
+            });
+            const { token } = response.data;
+            localStorage.setItem("token", token);
+            fetchCurrentUser(token);
+            window.location.reload();
+        } catch (error) {
+            alert("Login ou mot de passe incorrect");
+        }
+    };
+
+
+    /**
+     * Gestion de la création de compte (Signup)
+     */
     const handleSignup = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:8080/api/users", {
+            const response = await axios.post("http://localhost:8080/api/auth/register", {
                 username,
                 email,
                 password,
             });
-            alert("Compte créé avec succès. Connectez-vous !");
-            setIsLoginForm(true); // Revenir au formulaire de connexion
+            // On suppose que le backend renvoie un objet { success: true, message: "..."}
+            // Après l'inscription, on peut soit connecter automatiquement l'utilisateur,
+            // soit le laisser se connecter manuellement.
+            alert("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
+
+            // Basculer vers le formulaire de connexion
+            setIsLoginForm(true);
+            setUsername("");
+            setPassword("");
+            setEmail("");
         } catch (error) {
-            alert("Erreur lors de la création du compte.");
+            console.error("Erreur lors de la création de compte :", error);
+            alert("Une erreur est survenue lors de l'inscription.");
         }
     };
 
-    // Gestion de la déconnexion
-    const handleLogout = async () => {
-        try {
-            await axios.post("http://localhost:8080/api/users/logout", {}, { withCredentials: true });
-            setIsLoggedIn(false);
-            setUserInfo(null);
-            alert("Déconnecté avec succès.");
-        } catch (error) {
-            alert("Erreur lors de la déconnexion.");
-        }
+    /**
+     * Gestion de la déconnexion (Logout)
+     */
+    const handleLogout = () => {
+        // On supprime le token de localStorage
+        localStorage.removeItem("token");
+        // On remet l'état local
+        setIsLoggedIn(false);
+        setUserInfo(null);
+        window.location.reload();
     };
 
     return (
@@ -104,11 +141,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     <div className="space-y-4">
                         <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
                             <p className="text-sm text-gray-700">
-                                <strong>Nom d'utilisateur :</strong> {userInfo.username}
+                                <strong>Nom d'utilisateur :</strong> {userInfo?.username}
                             </p>
                             <p className="text-sm text-gray-700">
                                 <strong>Email :</strong>{" "}
-                                {userInfo.email ? userInfo.email : "non renseigné"}
+                                {userInfo?.email ? userInfo.email : "non renseigné"}
                             </p>
                         </div>
                         <button
@@ -231,19 +268,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     </div>
                 )}
             </div>
-
-            {/* Bouton Fermer (optionnel si on veut un second bouton en bas) */}
-            {/*
-      <div className="p-4 border-t border-gray-200">
-        <button
-          className="w-full flex items-center justify-center space-x-2 bg-gray-500 text-white font-semibold py-2 rounded-md hover:bg-gray-600 transition"
-          onClick={toggleSidebar}
-        >
-          <FaTimes />
-          <span>Fermer</span>
-        </button>
-      </div>
-      */}
         </div>
     );
 };

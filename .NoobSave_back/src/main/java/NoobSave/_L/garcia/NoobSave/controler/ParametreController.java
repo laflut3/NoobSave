@@ -1,6 +1,7 @@
 package NoobSave._L.garcia.NoobSave.controler;
 
 import NoobSave._L.garcia.NoobSave.entities.Parametre;
+import NoobSave._L.garcia.NoobSave.entities.User;
 import NoobSave._L.garcia.NoobSave.service.ParametreService;
 // --> Swagger/OpenAPI imports (assurez-vous de les avoir dans votre classpath)
 // import io.swagger.v3.oas.annotations.Operation;
@@ -10,13 +11,19 @@ import NoobSave._L.garcia.NoobSave.service.ParametreService;
 // import io.swagger.v3.oas.annotations.responses.ApiResponses;
 // import io.swagger.v3.oas.annotations.tags.Tag;
 
+import NoobSave._L.garcia.NoobSave.service.UtilsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -33,6 +40,8 @@ public class ParametreController {
 
     private final ParametreService parametreService;
 
+    private final UtilsService utils;
+
     /**
      * Récupère la configuration actuelle.
      *
@@ -44,7 +53,11 @@ public class ParametreController {
             @ApiResponse(responseCode = "200", description = "Configuration récupérée avec succès")
     })
     @GetMapping
-    public Parametre getParametres() {
+    public Parametre getParametres(Authentication authentication) {
+        if (!utils.isAdmin(authentication)) {
+            System.out.println("Permission refusée pour user: " + authentication.getName());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accès interdit");
+        }
         return parametreService.getParametre();
     }
 

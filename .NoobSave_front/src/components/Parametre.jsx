@@ -9,6 +9,9 @@ const possibleFileTypes = [".pdf", ".txt", ".docx", ".jpg", ".png"];
 
 export default function Parametre() {
     const [param, setParam] = useState(null);
+    const [isForbidden, setIsForbidden] = useState(false);
+    const [isNotConnected, setIsNotConnected] = useState(false);
+
 
     const [enabled, setEnabled] = useState(false);
     const [intervalMs, setIntervalMs] = useState(60000);
@@ -17,21 +20,45 @@ export default function Parametre() {
     const [checkedExtensions, setCheckedExtensions] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/parametres")
-            .then((res) => res.json())
-            .then((data) => {
-                setParam(data);
-                setEnabled(data.autoSaveEnabled);
-                setIntervalMs(data.autoSaveInterval);
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setIsNotConnected(true);
+            return;
+        }
 
-                // Conversion string -> tableau (si besoin)
-                const existing = data.allowedFileExtensions
-                    ?.split(",")
-                    .map((ext) => ext.trim()) || [];
-                setCheckedExtensions(existing);
+        fetch("http://localhost:8080/api/parametres", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => {
+                if (res.status === 403) {
+                    // L’utilisateur n’a pas les droits admin
+                    setIsForbidden(true);
+                    return null; // On arrête là (pas de res.json())
+                }
+                if (!res.ok) {
+                    throw new Error(`Erreur HTTP : ${res.status}`);
+                }
+                return res.json();
             })
-            .catch(console.error);
+            .then((data) => {
+                if (data) {
+                    setParam(data);
+                    setEnabled(data.autoSaveEnabled);
+                    setIntervalMs(data.autoSaveInterval);
+
+                    const existing = data.allowedFileExtensions
+                        ?.split(",")
+                        .map((ext) => ext.trim()) || [];
+                    setCheckedExtensions(existing);
+                }
+            })
+            .catch((err) => {
+                console.error("Erreur lors du chargement des param:", err);
+            });
     }, []);
+
 
     const [savePath, setSavePath] = useState("");
 
@@ -121,6 +148,25 @@ export default function Parametre() {
         setIntervalMs(val);
     };
 
+    if (isNotConnected) {
+        return (
+            <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-pink-100">
+                <div className="text-gray-700 text-xl">
+                    Vous n'êtes pas connecté ...
+                </div>
+            </section>
+        );
+    }
+
+    if (isForbidden) {
+        return (
+            <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-pink-100">
+                <div className="text-gray-700 text-xl">
+                    Vous n'avez pas les permissions admin ...
+                </div>
+            </section>
+        );
+    }
 
     if (!param) {
         return (

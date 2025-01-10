@@ -1,9 +1,27 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { FaUser } from "react-icons/fa";
-import { IoMdSettings } from "react-icons/io";
+import {Link} from "react-router-dom";
+import {useEffect, useState} from "react";
+import {FaUser} from "react-icons/fa";
+import {IoMdSettings} from "react-icons/io";
 
-function Header({ toggleSidebar }) {
+function Header({toggleSidebar}) {
+    const token = localStorage.getItem("token");
+    const [isAdmin, setIsAdmin] = useState(null);
+
+    useEffect(() => {
+        if (token) {
+            fetch("http://localhost:8080/api/users/isAdmin", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log(data);
+                    setIsAdmin(data.admin);
+                })
+        }
+    })
+
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleBurgerClick = () => {
@@ -12,13 +30,15 @@ function Header({ toggleSidebar }) {
 
     return (
         // On enveloppe toute la NavBar dans un <header> avec un gradient plein écran
-        <header className="w-full fixed top-0 left-0 z-10 bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md">
+        <header
+            className="w-full fixed top-0 left-0 z-10 bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md">
 
             {/* Barre horizontale "contenant" : elle est centrée, mais le gradient s'étend en pleine largeur */}
             <nav className="max-w-7xl mx-auto p-4 flex justify-between items-center">
                 {/* Logo */}
                 <div className="text-3xl font-extrabold tracking-tight">
-                    <Link to="/" className="hover:text-yellow-300 transition-colors pr-8 duration-300 text-lg md:text-2xl">
+                    <Link to="/"
+                          className="hover:text-yellow-300 transition-colors pr-8 duration-300 text-lg md:text-2xl">
                         NoobSave
                     </Link>
                 </div>
@@ -56,17 +76,19 @@ function Header({ toggleSidebar }) {
             "
                         onClick={toggleSidebar}
                     >
-                        <FaUser className="inline-block" />
+                        <FaUser className="inline-block"/>
                     </button>
-                    <Link
-                        to="/parametre"
-                        className="
+                    {token && isAdmin ? (
+                        <Link
+                            to="/parametre"
+                            className="
               bg-purple-700 text-white font-medium px-4 py-2 rounded-md shadow-md
               hover:bg-purple-800 hover:scale-105 transition-transform duration-300
             "
-                    >
-                        <IoMdSettings className="inline-block" />
-                    </Link>
+                        >
+                            <IoMdSettings className="inline-block"/>
+                        </Link>
+                    ) : null}
                 </div>
 
                 {/* Bouton burger (mobile) */}
@@ -108,7 +130,7 @@ function Header({ toggleSidebar }) {
           md:hidden transition-all duration-300 overflow-hidden
           ${isMobileMenuOpen ? "max-h-80" : "max-h-0"}
         `}
-                style={{ background: "inherit" }}
+                style={{background: "inherit"}}
                 // "inherit" => on reprend le gradient du parent, vous pouvez aussi refaire un bg-gradient identique
             >
                 <ul className="flex flex-col items-center text-white text-center space-y-4 py-4">
@@ -160,18 +182,20 @@ function Header({ toggleSidebar }) {
                                 setMobileMenuOpen(false);
                             }}
                         >
-                            <FaUser />
+                            <FaUser/>
                         </button>
-                        <Link
-                            to="/parametre"
-                            className="
+                        {token && isAdmin ? (
+                            <Link
+                                to="/parametre"
+                                className="
                 bg-purple-700 text-white font-medium px-4 py-2 rounded-md shadow-md
                 hover:bg-purple-800 hover:scale-105 transition-transform duration-300
               "
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            <IoMdSettings />
-                        </Link>
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                <IoMdSettings/>
+                            </Link>
+                        ) : null}
                     </li>
                 </ul>
             </div>

@@ -1,7 +1,26 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 
 function DetailTech() {
+    const token = localStorage.getItem("token");
+    const [isAdmin, setIsAdmin] = useState(null);
+
+    useEffect(() => {
+        if (token) {
+            fetch("http://localhost:8080/api/users/isAdmin", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log(data);
+                    setIsAdmin(data.admin);
+                })
+        }
+    })
+
+
     return (
         <section className="bg-gray-100 min-h-screen flex flex-col justify-center p-32">
             <div className="container mx-auto px-6 lg:px-16">
@@ -129,26 +148,29 @@ function DetailTech() {
                     </ul>
                 </div>
             </div>
-            <div className="flex w-full justify-center p-8">
-                <Link
-                    to="http://localhost:8080/swagger-ui/index.html#/"
-                    className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold rounded-lg shadow-md transition-colors duration-300"
-                >
-                    <svg
-                        className="w-6 h-6 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            {token && isAdmin ? (
+                <div className="flex w-full justify-center p-8">
+                    <Link
+                        to="http://localhost:8080/swagger-ui/index.html#/"
+                        className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold rounded-lg shadow-md transition-colors duration-300"
                     >
-                        <path
-                            d="M13 16h-1v-4h-1m2-4h.01M12 7c1.657 0 3 .895 3 2v6c0 1.105-1.343 2-3 2s-3-.895-3-2V9c0-1.105 1.343-2 3-2z"/>
-                    </svg>
-                    Wiki Doc (endpoints & détails)
-                </Link>
-            </div>
+                        <svg
+                            className="w-6 h-6 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path
+                                d="M13 16h-1v-4h-1m2-4h.01M12 7c1.657 0 3 .895 3 2v6c0 1.105-1.343 2-3 2s-3-.895-3-2V9c0-1.105 1.343-2 3-2z"/>
+                        </svg>
+                        Wiki Doc (endpoints & détails)
+                    </Link>
+                </div>
+            ) : null}
+
 
         </section>
     );
