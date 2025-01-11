@@ -83,6 +83,7 @@ public class SecurityConfig {
                         ).permitAll() // Autorise les requêtes publiques pour Swagger
                         .requestMatchers("/api/**").permitAll() // Autorise toutes les requêtes API
                         .requestMatchers("/api/users/me").authenticated() // Nécessite une authentification pour cet endpoint
+                        .requestMatchers("/javadoc/**").permitAll()
                 );
 
         // Ajoute le filtre JWT avant le filtre d'authentification classique

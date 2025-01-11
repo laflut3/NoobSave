@@ -114,6 +114,19 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.4.1</version> <!-- Vérifiez la dernière version -->
+                <executions>
+                    <execution>
+                        <phase>package</phase> <!-- Vous pouvez le modifier en "site" si nécessaire -->
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
