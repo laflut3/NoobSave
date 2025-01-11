@@ -28,7 +28,7 @@ public class SwaggerConfig {
 
     /**
      * Définit et retourne une instance personnalisée d'{@link OpenAPI}.
-     * <p>
+     *
      * Cette méthode configure les informations générales de l'API, telles que :
      * <ul>
      *     <li>Le titre : "API de gestion des fichiers".</li>
@@ -36,7 +36,6 @@ public class SwaggerConfig {
      *     <li>La description : "API pour gérer les fichiers avec des fonctionnalités de sauvegarde, téléchargement et restauration".</li>
      * </ul>
      * Ces informations sont affichées dans Swagger UI.
-     * </p>
      *
      * @return une instance configurée de {@link OpenAPI}
      */

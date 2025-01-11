@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 /**
  * Entité représentant un fichier enregistré dans la base de données MongoDB.
- * <p>
+ *
  * Cette classe contient les informations essentielles sur un fichier :
  * <ul>
  *     <li>Identifiant unique généré par MongoDB</li>
@@ -22,9 +22,7 @@ import java.time.LocalDateTime;
  *     <li>Dates d'ajout et de dernière modification</li>
  *     <li>Contenu binaire (stocké sous forme de tableau d'octets)</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Annotations utilisées :</strong>
  * <ul>
  *     <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals}, et {@code hashCode}.</li>
@@ -33,7 +31,6 @@ import java.time.LocalDateTime;
  *     <li>{@code @Schema} : Fournit des métadonnées pour Swagger/OpenAPI.</li>
  *     <li>{@code @NotBlank} et {@code @NotNull} : Assurent la validation des champs.</li>
  * </ul>
- * </p>
  */
 @Document(collection = "fichiers")
 @Data

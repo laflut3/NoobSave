@@ -7,16 +7,14 @@ import lombok.Data;
 
 /**
  * Représente une requête d'inscription pour créer un nouvel utilisateur.
- * <p>
+ *
  * Cette classe contient les informations nécessaires pour qu'un utilisateur puisse s'inscrire :
  * <ul>
  *     <li>Nom d'utilisateur</li>
  *     <li>Adresse e-mail</li>
  *     <li>Mot de passe</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Annotations utilisées :</strong>
  * <ul>
  *     <li>{@code @Data} : Génère automatiquement les méthodes getters, setters, {@code toString}, {@code equals} et {@code hashCode}.</li>
@@ -24,7 +22,6 @@ import lombok.Data;
  *     <li>{@code @NotBlank} : Valide que le champ n'est pas vide ni composé uniquement d'espaces blancs.</li>
  *     <li>{@code @Email} : Valide que le champ contient une adresse e-mail valide.</li>
  * </ul>
- * </p>
  */
 @Data
 @Schema(description = "Requête pour inscrire un nouvel utilisateur. Contient les informations nécessaires pour créer un compte utilisateur.")

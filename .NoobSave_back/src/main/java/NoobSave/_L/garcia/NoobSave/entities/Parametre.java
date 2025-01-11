@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Entité représentant les paramètres de configuration de l'application.
- * <p>
+ *
  * Cette classe contient les réglages liés à la sauvegarde automatique, tels que :
  * <ul>
  *     <li>Activation ou désactivation de la sauvegarde automatique</li>
@@ -17,9 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *     <li>Extensions de fichiers autorisées</li>
  *     <li>Chemin de sauvegarde</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Annotations utilisées :</strong>
  * <ul>
  *     <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals} et {@code hashCode}.</li>
@@ -27,7 +25,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *     <li>{@code @Document} : Spécifie que cette classe correspond à une collection MongoDB.</li>
  *     <li>{@code @Schema} : Fournit des métadonnées pour Swagger/OpenAPI.</li>
  * </ul>
- * </p>
  */
 @Document(collection = "parametres")
 @Data

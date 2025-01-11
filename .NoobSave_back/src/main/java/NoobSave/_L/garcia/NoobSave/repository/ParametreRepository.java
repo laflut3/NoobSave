@@ -11,22 +11,17 @@ import org.springframework.stereotype.Repository;
  * ainsi que la possibilité de définir des requêtes personnalisées.
  * </p>
  *
- * <p>
  * <strong>Fonctionnalités principales :</strong>
  * <ul>
  *     <li>Héritage des méthodes CRUD de {@link MongoRepository}, telles que {@code save}, {@code findById}, {@code deleteById}, etc.</li>
  *     <li>Possibilité d'ajouter des méthodes personnalisées en suivant les conventions de Spring Data.</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Annotations utilisées :</strong>
  * <ul>
  *     <li>{@code @Repository} : Indique que cette interface est un composant Spring responsable des opérations de persistance.</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Utilisation dans les services :</strong>
  * <pre>{@code
  * @Service
@@ -49,7 +44,7 @@ import org.springframework.stereotype.Repository;
  * }
  * }</pre>
  *
- * <p>
+ *
  * <strong>Bonnes pratiques :</strong>
  * <ul>
  *     <li>Utilisez les méthodes héritées pour gérer les opérations standard sans implémentation supplémentaire.</li>
@@ -58,7 +53,6 @@ import org.springframework.stereotype.Repository;
  *     <li>Manipulez les exceptions liées aux opérations de persistance dans la couche service pour une meilleure abstraction.</li>
  *     <li>Utilisez des DTOs (Data Transfer Objects) pour séparer la persistance des besoins de la couche de présentation.</li>
  * </ul>
- * </p>
  *
  * @see Parametre
  * @see MongoRepository

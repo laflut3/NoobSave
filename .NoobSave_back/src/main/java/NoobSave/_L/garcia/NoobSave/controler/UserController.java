@@ -18,13 +18,12 @@ import java.util.Map;
 
 /**
  * Contrôleur REST pour gérer les utilisateurs.
- * <p>
+ *
  * Ce contrôleur permet de :
  * <ul>
  *     <li>Récupérer les informations de l'utilisateur authentifié.</li>
  *     <li>Vérifier si l'utilisateur est administrateur.</li>
  * </ul>
- * </p>
  */
 @Tag(
         name = "User Management",

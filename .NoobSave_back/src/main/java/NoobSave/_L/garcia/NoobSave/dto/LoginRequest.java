@@ -11,14 +11,12 @@ import lombok.Data;
  * notamment le nom d'utilisateur et le mot de passe.
  * </p>
  *
- * <p>
  * <strong>Annotations :</strong>
  * <ul>
  *   <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals} et {@code hashCode}.</li>
  *   <li>{@code @Schema} : Fournit des métadonnées pour la documentation OpenAPI/Swagger.</li>
  *   <li>{@code @NotBlank} : Assure que les champs ne sont pas nuls, vides ou composés uniquement d'espaces blancs.</li>
  * </ul>
- * </p>
  */
 @Data
 @Schema(description = "Requête de connexion contenant le nom d'utilisateur et le mot de passe nécessaires pour l'authentification.")

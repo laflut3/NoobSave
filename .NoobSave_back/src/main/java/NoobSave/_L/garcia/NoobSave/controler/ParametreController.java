@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * Contrôleur REST pour gérer les paramètres de l'application.
- * <p>
+ *
  * Ce contrôleur permet de configurer des paramètres tels que :
  * <ul>
  *     <li>Sauvegarde automatique</li>
@@ -27,7 +27,6 @@ import java.util.List;
  *     <li>Extensions de fichiers autorisées</li>
  *     <li>Chemin de sauvegarde</li>
  * </ul>
- * </p>
  */
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -171,4 +170,9 @@ public class ParametreController {
     public void deleteSavePath() {
         parametreService.deleteSavePath();
     }
+
+    /**
+     * Crée une instance vide de l'utilisateur.
+     * Utilisé principalement par les frameworks pour la sérialisation.
+     */
 }

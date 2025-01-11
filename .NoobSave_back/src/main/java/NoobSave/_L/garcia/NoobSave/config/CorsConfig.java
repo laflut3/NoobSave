@@ -8,10 +8,10 @@ import org.springframework.web.filter.CorsFilter;
 
 /**
  * Configuration des CORS (Cross-Origin Resource Sharing).
- * <p>
+ *
  * Cette classe configure les règles CORS pour autoriser ou restreindre les appels HTTP
  * provenant de domaines externes vers l'application Spring Boot.
- * </p>
+ *
  */
 @Configuration
 public class CorsConfig {

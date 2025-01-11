@@ -13,22 +13,17 @@ import java.util.Optional;
  * ainsi que des méthodes de requête personnalisées pour répondre à des besoins spécifiques.
  * </p>
  *
- * <p>
  * <strong>Principales fonctionnalités :</strong>
  * <ul>
  *     <li>Héritage des méthodes CRUD de {@link MongoRepository}, telles que {@code save}, {@code findById}, {@code deleteById}, etc.</li>
  *     <li>Ajout de méthodes personnalisées comme {@code findByUsername}, {@code existsByUsername} et {@code existsByEmail}.</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Annotations utilisées :</strong>
  * <ul>
  *     <li>{@code @Repository} : Indique que cette interface est un composant Spring responsable des opérations de persistance.</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Exemple d'utilisation dans les services :</strong>
  * <pre>{@code
  * @Service
@@ -55,7 +50,7 @@ import java.util.Optional;
  * }
  * }</pre>
  *
- * <p>
+ *
  * <strong>Bonnes pratiques :</strong>
  * <ul>
  *     <li>Utilisez les méthodes dérivées comme {@code findByUsername} pour éviter d'écrire des requêtes personnalisées complexes.</li>
@@ -63,7 +58,7 @@ import java.util.Optional;
  *     <li>Validez les entrées dans la couche service avant d'appeler le repository.</li>
  *     <li>Utilisez des DTOs pour éviter d'exposer directement les entités dans les réponses API.</li>
  * </ul>
- * </p>
+ *
  *
  * @see User
  * @see MongoRepository
@@ -80,13 +75,11 @@ public interface UserRepository extends MongoRepository<User, String> {
      * @param username Le nom d'utilisateur recherché.
      * @return Un {@link Optional} contenant l'utilisateur trouvé, ou vide si aucun utilisateur n'est trouvé.
      *
-     * <p>
      * <strong>Exemple d'utilisation :</strong>
      * <pre>{@code
      * Optional<User> user = userRepository.findByUsername("JohnDoe");
      * user.ifPresent(u -> System.out.println("Utilisateur trouvé : " + u.getUsername()));
      * }</pre>
-     * </p>
      */
     Optional<User> findByUsername(String username);
 

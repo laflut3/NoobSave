@@ -2,10 +2,6 @@ package NoobSave._L.garcia.NoobSave.service;
 
 import NoobSave._L.garcia.NoobSave.entities.Fichier;
 import NoobSave._L.garcia.NoobSave.repository.FichierRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,31 +20,37 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Service pour gérer les opérations sur les fichiers, y compris la synchronisation
- * avec le répertoire, l'ajout, la suppression, la sauvegarde programmée et la restauration.
- * <p>
- * <b>Note :</b> Ce service n'est pas exposé directement via HTTP, mais il est appelé
- * depuis des contrôleurs REST (ex. {@code FichierController}). L'ajout d'annotations
- * Swagger ici ne sera utile que si vous configurez explicitement SpringDoc (ou équivalent)
- * pour analyser et exposer la documentation de vos services internes.
+ * Service pour gérer les opérations sur les fichiers.
+ *
+ * Les fonctionnalités incluent :
+ * <ul>
+ *     <li>Synchronisation avec un répertoire local et la base de données.</li>
+ *     <li>Ajout, suppression et restauration de fichiers.</li>
+ *     <li>Gestion des permissions POSIX sur les fichiers/répertoires.</li>
+ *     <li>Exécution de sauvegardes automatiques ou manuelles.</li>
+ * </ul>
+
+ * <b>Note :</b> Ce service est conçu pour être utilisé par des contrôleurs REST.
+ *
+ * @author torres léo
+ * @version 1.0
  */
-@Tag(name = "FichierService", description = "Service responsable de la gestion et de la synchronisation des fichiers.")
 @Service
 @RequiredArgsConstructor
 public class FichierService {
 
     /**
-     * Référence au dépôt de fichiers pour interagir avec la base de données.
+     * Référentiel pour gérer les entités {@link Fichier}.
      */
     private final FichierRepository fichierRepository;
 
     /**
-     * Référence au service gérant les paramètres (chemins, extensions autorisées, etc.).
+     * Service pour accéder aux paramètres globaux.
      */
     private final ParametreService parametreService;
 
     /**
-     * Chemin par défaut vers le répertoire d’archive.
+     * Chemin par défaut utilisé pour les fichiers d'archive.
      */
     private final Path defaultPath = Paths.get("./../archive");
 
@@ -58,15 +60,14 @@ public class FichierService {
     private LocalDateTime lastSyncTime = LocalDateTime.now().minusYears(10);
 
     /**
-     * Retourne le chemin de sauvegarde à utiliser.
-     * <p>
-     * Si un chemin est défini dans {@link ParametreService#getParametre()},
-     * celui-ci est utilisé. Sinon, le chemin par défaut est {@code ./../archive}.
+     * Retourne le chemin de sauvegarde actif.
      *
-     * @return le chemin de sauvegarde actif.
+     * <p>Si un chemin est configuré dans les paramètres, celui-ci est utilisé. Sinon, le chemin par défaut est
+     * {@code ./../archive}.</p>
+     *
+     * @return Le chemin de sauvegarde actif.
      */
-    @Operation(summary = "Obtenir le chemin de sauvegarde actif (interne)",
-            description = "Renvoie le chemin où les fichiers doivent être archivés.")
+
     private Path savePath() {
         return Optional.ofNullable(parametreService.getParametre().getSavePath())
                 .map(Paths::get)
@@ -74,14 +75,10 @@ public class FichierService {
     }
 
     /**
-     * Effectue une sauvegarde régulière (toutes les X millisecondes) si l’auto-save est activée.
-     * <p>
-     * Le délai entre deux sauvegardes est déterminé par
-     * {@link ParametreService#getParametre()#getAutoSaveInterval()}.
+     * Sauvegarde régulière des fichiers à un intervalle fixe si l'auto-save est activée.
      *
-     * @throws IOException si un problème survient lors de la lecture/écriture des fichiers.
+     * @throws IOException Si une erreur survient lors de la lecture/écriture des fichiers.
      */
-    @Operation(summary = "Sauvegarde planifiée", description = "Déclenche la synchronisation du répertoire à intervalles réguliers.")
     @Scheduled(fixedRate = 5000) // équivaut ici à 5 secondes en exemple
     public void regularSave() throws IOException {
         if (!parametreService.getParametre().isAutoSaveEnabled()) {
@@ -100,33 +97,29 @@ public class FichierService {
     }
 
     /**
-     * Déclenche manuellement la sauvegarde (synchronisation) des fichiers.
+     * Déclenche une sauvegarde manuelle (sans attendre la tâche planifiée).
      *
-     * @throws IOException si un problème survient lors de la lecture/écriture des fichiers.
+     * @throws IOException Si une erreur survient lors de la lecture/écriture des fichiers.
      */
-    @Operation(summary = "Déclencher manuellement la sauvegarde",
-            description = "Appel direct pour lancer la synchronisation du répertoire (sans attendre la tâche planifiée).")
     public void saveDeclencher() throws IOException {
         Path savePath = savePath();
         synchroniserFichiersDuRepertoire(savePath);
     }
 
     /**
-     * Synchronise tous les fichiers du répertoire (et sous-répertoires) avec la base de données.
+     * Synchronise un répertoire local (et ses sous-répertoires) avec la base de données.
+     *
+     * <strong>Fonctionnalités : </strong>
      * <ul>
-     *     <li>S’il s’agit d’un nouveau fichier, il est ajouté à la BDD.</li>
-     *     <li>S’il existe déjà, son contenu est mis à jour si nécessaire.</li>
-     *     <li>Le type MIME est détecté si possible.</li>
+     *     <li>Ajout de nouveaux fichiers dans la base de données.</li>
+     *     <li>Mise à jour des fichiers existants si leur contenu a changé.</li>
+     *     <li>Détection automatique du type MIME.</li>
      * </ul>
      *
-     * @param repertoire chemin du répertoire à synchroniser.
-     * @throws IOException si un problème survient lors de la lecture/écriture des fichiers.
+     * @param repertoire Chemin du répertoire à synchroniser.
+     * @throws IOException Si une erreur survient lors de la lecture ou de l'écriture.
      */
-    @Operation(summary = "Synchroniser un répertoire donné",
-            description = "Analyse le répertoire (récursivement) et met à jour la base de données pour chaque fichier rencontré.")
-    public void synchroniserFichiersDuRepertoire(
-            @Parameter(description = "Chemin du répertoire à analyser pour la synchronisation.")
-            Path repertoire) throws IOException {
+    public void synchroniserFichiersDuRepertoire(Path repertoire) throws IOException {
 
         System.out.println("Début de la synchronisation à : " + LocalDateTime.now());
 
@@ -146,21 +139,19 @@ public class FichierService {
     }
 
     /**
-     * Parcourt récursivement un répertoire et traite les fichiers.
+     * Traite un répertoire en ajoutant ou mettant à jour les fichiers dans la base de données.
+     *
+     * <p>Parcourt récursivement le répertoire spécifié et gère les fichiers valides :</p>
      * <ul>
-     *     <li>Si le fichier est valide, il est ajouté ou mis à jour en base de données.</li>
-     *     <li>Les sous-répertoires sont visités de manière récursive.</li>
+     *     <li>Ajoute les nouveaux fichiers dans la base de données.</li>
+     *     <li>Met à jour les fichiers existants si leur contenu a changé.</li>
      * </ul>
      *
-     * @param repertoireActuel répertoire à inspecter.
-     * @return nombre de fichiers valides traités (ajoutés ou mis à jour).
-     * @throws IOException si un problème survient lors de la lecture du répertoire.
+     * @param repertoireActuel Chemin du répertoire à analyser.
+     * @return Nombre de fichiers valides traités.
+     * @throws IOException Si une erreur survient lors de la lecture des fichiers.
      */
-    @Operation(summary = "Traiter un répertoire (récursif, interne)",
-            description = "Méthode interne qui ajoute ou met à jour chaque fichier détecté dans la BDD.")
-    private int traiterRepertoire(
-            @Parameter(description = "Chemin du répertoire actuel à analyser.")
-            Path repertoireActuel) throws IOException {
+    private int traiterRepertoire(Path repertoireActuel) throws IOException {
 
         int count = 0;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(repertoireActuel)) {
@@ -230,8 +221,6 @@ public class FichierService {
      *
      * @return liste de fichiers.
      */
-    @Operation(summary = "Obtenir tous les fichiers (interne)",
-            description = "Renvoie la liste de l'intégralité des fichiers présents en base de données.")
     public List<Fichier> obtenirTousLesFichiers() {
         return fichierRepository.findAll();
     }
@@ -242,25 +231,17 @@ public class FichierService {
      * @param id identifiant du fichier en base.
      * @return un {@link Optional} contenant le fichier s’il existe, sinon vide.
      */
-    @Operation(summary = "Obtenir un fichier par son ID (interne)",
-            description = "Cherche un fichier dans la base de données à partir de son identifiant.")
-    public Optional<Fichier> obtenirFichierParId(
-            @Parameter(description = "Identifiant unique du fichier en base", example = "63c2f5e5ab12ef00123")
-            String id) {
+     public Optional<Fichier> obtenirFichierParId(String id) {
         return fichierRepository.findById(id);
     }
 
     /**
-     * Vérifie si le fichier a une extension autorisée (exemple : .pdf, .txt, .docx, etc.).
+     * Vérifie si le fichier a une extension autorisée.
      *
-     * @param fichier fichier local à vérifier.
-     * @return {@code true} si l’extension du fichier est dans la liste autorisée, {@code false} sinon.
+     * @param fichier Fichier local à vérifier.
+     * @return {@code true} si l'extension est autorisée, sinon {@code false}.
      */
-    @Operation(summary = "Vérifier la validité d’un fichier (interne)",
-            description = "Vérifie si l’extension du fichier est bien dans la liste autorisée (définie dans ParametreService).")
-    public boolean estUnFichierValide(
-            @Parameter(description = "Fichier local à vérifier (extension, etc.)")
-            File fichier) {
+   public boolean estUnFichierValide(File fichier) {
 
         String nom = fichier.getName().toLowerCase();
         List<String> allowedExtensions = parametreService.getAllowedFileExtensions();
@@ -270,13 +251,9 @@ public class FichierService {
     /**
      * Supprime un fichier du disque et de la base de données.
      *
-     * @param fichier instance {@link Fichier} à supprimer.
+     * @param fichier Instance {@link Fichier} à supprimer.
      */
-    @Operation(summary = "Supprimer un fichier (interne)",
-            description = "Supprime physiquement le fichier sur le disque puis le retire de la base de données.")
-    public void supprimerFichier(
-            @Parameter(description = "Entité représentant le fichier à supprimer (nom, chemin, etc.).")
-            Fichier fichier) {
+    public void supprimerFichier(Fichier fichier) {
 
         Path fichierPath = defaultPath.resolve(fichier.getNom());
         try {
@@ -295,16 +272,13 @@ public class FichierService {
     /**
      * Applique de manière récursive les permissions POSIX spécifiées sur un chemin (et ses parents).
      *
-     * @param chemin répertoire ou fichier auquel appliquer les permissions.
-     * @param perms  ensemble de permissions POSIX.
+     * <p>Cette méthode traverse chaque parent du chemin fourni, en appliquant les permissions POSIX
+     * spécifiées aux répertoires rencontrés. Si un chemin n'existe pas, l'opération est arrêtée.</p>
+     *
+     * @param chemin Répertoire ou fichier auquel appliquer les permissions POSIX.
+     * @param perms  Ensemble de permissions POSIX à appliquer sur le chemin et ses parents.
      */
-    @Operation(summary = "Appliquer des permissions sur un chemin (interne)",
-            description = "Remonte récursivement dans l’arborescence pour définir les permissions POSIX sur les répertoires.")
-    private void appliquerPermissionsSurArborescence(
-            @Parameter(description = "Chemin cible (fichier/répertoire) pour appliquer les permissions.")
-            Path chemin,
-            @Parameter(description = "Ensemble des permissions POSIX à appliquer.")
-            Set<PosixFilePermission> perms) {
+    private void appliquerPermissionsSurArborescence(Path chemin,Set<PosixFilePermission> perms) {
 
         Path current = chemin;
         while (current != null && Files.exists(current)) {
@@ -321,16 +295,16 @@ public class FichierService {
     }
 
     /**
-     * Extrait le sous-répertoire (par rapport à {@link #defaultPath}) depuis un chemin complet.
+     * Extrait le sous-répertoire relatif au chemin par défaut ({@link #defaultPath}).
      *
-     * @param cheminComplet chemin absolu vers un fichier.
-     * @return nom du sous-répertoire ou chaîne vide si on est à la racine.
+     * <p>Cette méthode analyse le chemin absolu fourni et retourne le sous-répertoire relatif au chemin
+     * par défaut (racine des archives). Si le chemin fourni n'est pas dans l'arborescence du chemin
+     * par défaut, la valeur "INCONNU" est retournée.</p>
+     *
+     * @param cheminComplet Chemin absolu vers un fichier ou répertoire.
+     * @return Nom du sous-répertoire ou chaîne vide si le chemin est à la racine.
      */
-    @Operation(summary = "Extraire le sous-répertoire (interne)",
-            description = "Compare le chemin complet à la racine d'archive pour déterminer le sous-répertoire.")
-    private String extraireSousRepertoire(
-            @Parameter(description = "Chemin absolu depuis lequel extraire le sous-répertoire.")
-            String cheminComplet) {
+   private String extraireSousRepertoire(String cheminComplet) {
 
         Path pathNormalise = Paths.get(cheminComplet).normalize().toAbsolutePath();
         Path archiveRoot = defaultPath.normalize().toAbsolutePath();
@@ -343,12 +317,13 @@ public class FichierService {
     }
 
     /**
-     * Liste les sous-répertoires (par rapport à {@link #defaultPath}) pour tous les fichiers en base.
+     * Liste les sous-répertoires présents dans la base de données en se basant sur leurs chemins.
      *
-     * @return liste triée des sous-répertoires détectés.
+     * <p>Chaque fichier enregistré en base est analysé pour extraire son sous-répertoire relatif au
+     * chemin par défaut. Les résultats sont triés et retournés sous forme de liste unique.</p>
+     *
+     * @return Liste triée des sous-répertoires détectés.
      */
-    @Operation(summary = "Lister les sous-répertoires présents (interne)",
-            description = "Retourne la liste des sous-répertoires où se trouvent des fichiers en base de données.")
     public List<String> listerSousRepertoires() {
         List<Fichier> fichiers = fichierRepository.findAll();
         Set<String> sousRepertoires = new HashSet<>();
@@ -363,12 +338,14 @@ public class FichierService {
     }
 
     /**
-     * Restaure tous les fichiers manquants sur le disque en se basant sur la liste complète des fichiers en base.
+     * Restaure tous les fichiers manquants sur le disque en fonction des enregistrements en base de données.
      *
-     * @return nombre de fichiers effectivement restaurés.
+     * <p>Pour chaque fichier enregistré en base, cette méthode vérifie s'il est présent sur le disque.
+     * Si le fichier est manquant, il est restauré dans le chemin correspondant en appliquant des
+     * permissions POSIX prédéfinies.</p>
+     *
+     * @return Nombre de fichiers effectivement restaurés.
      */
-    @Operation(summary = "Restaurer tous les fichiers manquants (interne)",
-            description = "Pour chaque fichier en base, vérifie s'il est présent sur le disque, sinon le recrée.")
     public int restaurerFichiersManquants() {
         List<Fichier> fichiers = fichierRepository.findAll();
 
@@ -384,13 +361,13 @@ public class FichierService {
     /**
      * Restaure uniquement les fichiers manquants pour un sous-répertoire donné.
      *
-     * @param sousRepertoire sous-répertoire ciblé (si vide, la racine).
-     * @return nombre de fichiers effectivement restaurés pour ce sous-répertoire.
+     * <p>Cette méthode filtre les fichiers enregistrés en base de données pour ne restaurer que ceux
+     * correspondant au sous-répertoire spécifié. Si le sous-répertoire est vide, elle cible la racine.</p>
+     *
+     * @param sousRepertoire Sous-répertoire ciblé pour la restauration (vide pour la racine).
+     * @return Nombre de fichiers effectivement restaurés pour ce sous-répertoire.
      */
-    @Operation(summary = "Restaurer les fichiers d’un sous-répertoire (interne)",
-            description = "Ne restaure que les fichiers appartenant au sous-répertoire spécifié.")
     public int restaurerFichiersPourSousRepertoire(
-            @Parameter(description = "Nom du sous-répertoire à cibler (vide pour la racine).")
             String sousRepertoire) {
 
         List<Fichier> fichiers = fichierRepository.findAll();
@@ -412,28 +389,19 @@ public class FichierService {
     }
 
     /**
-     * Restaure les fichiers manquants satisfaisant une certaine condition.
+     * Restaure les fichiers manquants répondant à une certaine condition.
      *
-     * @param fichiers     liste de tous les fichiers connus en base.
-     * @param condition    prédicat indiquant quels fichiers doivent être restaurés.
-     * @param archiveRoot  racine où les fichiers sont (ou seront) stockés.
-     * @param perms        permissions POSIX à appliquer sur les fichiers nouvellement créés.
-     * @return nombre de fichiers effectivement restaurés.
+     * <p>Cette méthode parcourt la liste des fichiers en base et applique un filtre pour déterminer
+     * lesquels doivent être restaurés. Les fichiers manquants sont écrits sur le disque et les
+     * permissions POSIX spécifiées sont appliquées.</p>
+     *
+     * @param fichiers    Liste de tous les fichiers enregistrés en base.
+     * @param condition   Prédicat indiquant les fichiers à restaurer.
+     * @param archiveRoot Chemin racine où les fichiers doivent être restaurés.
+     * @param perms       Ensemble de permissions POSIX à appliquer sur les fichiers restaurés.
+     * @return Nombre de fichiers effectivement restaurés.
      */
-    @Operation(summary = "Méthode générique de restauration (interne)",
-            description = "Pour chaque fichier répondant au prédicat, recrée physiquement le fichier s’il est absent sur le disque.")
-    private int restoreFiles(
-            @Parameter(description = "Liste de tous les fichiers en base.")
-            List<Fichier> fichiers,
-
-            @Parameter(description = "Condition/filter pour sélectionner les fichiers à restaurer.")
-            Predicate<Fichier> condition,
-
-            @Parameter(description = "Racine d’archive où déposer/restaurer les fichiers.")
-            Path archiveRoot,
-
-            @Parameter(description = "Ensemble de permissions POSIX à appliquer sur les fichiers créés.")
-            Set<PosixFilePermission> perms) {
+    private int restoreFiles(List<Fichier> fichiers, Predicate<Fichier> condition, Path archiveRoot, Set<PosixFilePermission> perms) {
 
         int restoredCount = 0;
 

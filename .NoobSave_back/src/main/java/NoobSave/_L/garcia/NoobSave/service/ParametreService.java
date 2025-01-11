@@ -11,6 +11,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service pour la gestion des paramètres de configuration de l'application.
+ *
+ * Ce service permet de :
+ * <ul>
+ *     <li>Récupérer ou créer la configuration par défaut.</li>
+ *     <li>Mettre à jour les paramètres de sauvegarde automatique.</li>
+ *     <li>Gérer les extensions de fichiers autorisées.</li>
+ *     <li>Configurer et valider le chemin de sauvegarde des fichiers.</li>
+ * </ul>
+ *
+ * <b>Note :</b> Les paramètres sont stockés dans une entité unique {@link Parametre}.
+ *
+ * @author Votre Nom
+ * @version 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class ParametreService {
@@ -18,7 +34,12 @@ public class ParametreService {
     private final ParametreRepository parametreRepository;
 
     /**
-     * Récupère l'unique configuration (ou la crée par défaut s'il n'y en a pas).
+     * Récupère l'unique configuration (ou la crée par défaut si inexistante).
+     *
+     * <p>Cette méthode vérifie si une configuration existe en base de données. Si aucune configuration
+     * n'est trouvée, une nouvelle instance avec des paramètres par défaut est créée et sauvegardée.</p>
+     *
+     * @return L'instance unique de {@link Parametre}.
      */
     public Parametre getParametre() {
         Optional<Parametre> opt = parametreRepository.findAll().stream().findFirst();
@@ -36,7 +57,9 @@ public class ParametreService {
 
 
     /**
-     * Active / désactive la sauvegarde automatique.
+     * Active ou désactive la sauvegarde automatique.
+     *
+     * @param enabled Indique si la sauvegarde automatique doit être activée.
      */
     public void updateAutoSaveEnabled(boolean enabled) {
         Parametre p = getParametre();
@@ -45,7 +68,9 @@ public class ParametreService {
     }
 
     /**
-     * Met à jour l'intervalle de sauvegarde (en ms).
+     * Met à jour l'intervalle de sauvegarde automatique.
+     *
+     * @param interval Intervalle de temps en millisecondes entre deux sauvegardes.
      */
     public void updateAutoSaveInterval(long interval) {
         Parametre p = getParametre();
@@ -54,8 +79,11 @@ public class ParametreService {
     }
 
     /**
-     * Met à jour la liste des extensions autorisées.
-     * On reçoit par ex. [".pdf", ".docx", ".txt"]
+     * Met à jour la liste des extensions de fichiers autorisées.
+     *
+     * <p>Les extensions sont reçues sous forme de liste et concaténées en une chaîne séparée par des virgules.</p>
+     *
+     * @param extensions Liste des extensions autorisées (par exemple : [".pdf", ".docx", ".txt"]).
      */
     public void updateAllowedFileExtensions(List<String> extensions) {
         Parametre p = getParametre();
@@ -68,7 +96,11 @@ public class ParametreService {
     }
 
     /**
-     * Retourne les extensions autorisées sous forme de liste.
+     * Retourne la liste des extensions de fichiers autorisées.
+     *
+     * <p>Cette méthode convertit la chaîne stockée en base (séparée par des virgules) en une liste d'extensions.</p>
+     *
+     * @return Liste des extensions autorisées.
      */
     public List<String> getAllowedFileExtensions() {
         Parametre p = getParametre();
@@ -82,7 +114,12 @@ public class ParametreService {
     }
 
     /**
-     * Met à jour le chemin de sauvegarde.
+     * Met à jour le chemin de sauvegarde des fichiers.
+     *
+     * <p>Valide que le chemin spécifié est un répertoire existant avant de le sauvegarder en base.</p>
+     *
+     * @param path Chemin de sauvegarde à définir.
+     * @throws IllegalArgumentException Si le chemin est invalide ou inexistant.
      */
     public void updateSavePath(String path) {
         if (path == null || path.trim().isEmpty()) {
@@ -100,7 +137,9 @@ public class ParametreService {
 
 
     /**
-     * Supprime le chemin de sauvegarde en le réinitialisant à null.
+     * Réinitialise le chemin de sauvegarde à une valeur nulle.
+     *
+     * <p>Cette méthode supprime le chemin de sauvegarde défini dans la configuration actuelle.</p>
      */
     public void deleteSavePath() {
         Parametre p = getParametre();

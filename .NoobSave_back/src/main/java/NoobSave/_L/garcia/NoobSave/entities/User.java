@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Représente un utilisateur dans le système.
- * <p>
+ *
  * Cette entité MongoDB stocke les informations essentielles des utilisateurs, telles que :
  * <ul>
  *     <li>Nom d'utilisateur</li>
@@ -15,16 +15,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *     <li>Mot de passe</li>
  *     <li>Statut d'administrateur</li>
  * </ul>
- * </p>
  *
- * <p>
  * <strong>Annotations utilisées :</strong>
  * <ul>
  *     <li>{@code @Data} : Génère automatiquement les méthodes getter, setter, {@code toString}, {@code equals} et {@code hashCode}.</li>
  *     <li>{@code @Document} : Spécifie que cette classe correspond à une collection MongoDB nommée "utilisateurs".</li>
  *     <li>{@code @Schema} : Fournit des métadonnées Swagger pour chaque champ.</li>
  * </ul>
- * </p>
  */
 @Data
 @Document(collection = "utilisateurs")

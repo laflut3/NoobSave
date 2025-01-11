@@ -23,13 +23,12 @@ import java.io.IOException;
  * contexte de sécurité de Spring Security.
  * </p>
  *
- * <p>
+ *
  * <strong>Annotations :</strong>
  * <ul>
  *   <li>{@code @Component} : Enregistre cette classe comme composant Spring.</li>
  *   <li>{@code @RequiredArgsConstructor} : Génère un constructeur avec les dépendances nécessaires.</li>
  * </ul>
- * </p>
  */
 @Component
 @RequiredArgsConstructor
