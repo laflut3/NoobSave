@@ -149,14 +149,15 @@ function DetailTech() {
                 </div>
             </div>
             {token && isAdmin ? (
-                <div className={"flex space-x-2 p-8 px-0 w-full"}>
-                    <div className="flex flex-grow justify-center">
+                <div className="flex flex-wrap justify-center items-center gap-4 p-8 w-full">
+                    {/* Swagger Documentation */}
+                    <div className="w-full sm:w-auto flex justify-center">
                         <Link
                             to="http://localhost:8080/swagger-ui/index.html#/"
-                            className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold rounded-lg shadow-md transition-colors duration-300"
+                            className="flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg sm:text-xl font-semibold rounded-lg shadow-lg transition-all duration-300"
                         >
                             <svg
-                                className="w-6 h-6 mr-2"
+                                className="w-6 h-6 mr-3"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
@@ -165,18 +166,21 @@ function DetailTech() {
                                 strokeLinejoin="round"
                             >
                                 <path
-                                    d="M13 16h-1v-4h-1m2-4h.01M12 7c1.657 0 3 .895 3 2v6c0 1.105-1.343 2-3 2s-3-.895-3-2V9c0-1.105 1.343-2 3-2z"/>
+                                    d="M13 16h-1v-4h-1m2-4h.01M12 7c1.657 0 3 .895 3 2v6c0 1.105-1.343 2-3 2s-3-.895-3-2V9c0-1.105 1.343-2 3-2z"
+                                />
                             </svg>
-                            Swagger doc (endpoint)
+                            Swagger Doc
                         </Link>
                     </div>
-                    <div className="flex flex-grow justify-center ">
+
+                    {/* Java Documentation */}
+                    <div className="w-full sm:w-auto flex justify-center">
                         <Link
                             to="https://laflut3.github.io/NoobSave/docs/apidocs/index.html"
-                            className="inline-flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white text-xl font-semibold rounded-lg shadow-md transition-colors duration-300"
+                            className="flex items-center px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white text-lg sm:text-xl font-semibold rounded-lg shadow-lg transition-all duration-300"
                         >
                             <svg
-                                className="w-6 h-6 mr-2"
+                                className="w-6 h-6 mr-3"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
@@ -185,12 +189,14 @@ function DetailTech() {
                                 strokeLinejoin="round"
                             >
                                 <path
-                                    d="M13 16h-1v-4h-1m2-4h.01M12 7c1.657 0 3 .895 3 2v6c0 1.105-1.343 2-3 2s-3-.895-3-2V9c0-1.105 1.343-2 3-2z"/>
+                                    d="M13 16h-1v-4h-1m2-4h.01M12 7c1.657 0 3 .895 3 2v6c0 1.105-1.343 2-3 2s-3-.895-3-2V9c0-1.105 1.343-2 3-2z"
+                                />
                             </svg>
-                            Java Doc (Wiki)
+                            JavaDoc Wiki
                         </Link>
                     </div>
                 </div>
+
             ) : null}
 
 
